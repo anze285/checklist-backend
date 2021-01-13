@@ -1,5 +1,5 @@
 {
-  "name": "organizeapp_backend",
+  "name": "checklist_backend",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -9,6 +9,7 @@
   "author": "Anže Goršek",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "mongoose": "^5.11.11"
   }
 }
