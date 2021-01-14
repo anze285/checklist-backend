@@ -58,31 +58,10 @@ module.exports = {
 
             await user.save();
 
-            // const payload = {
-            //     user: {
-            //         id: user.id
-            //     }
-            // };
-
             return res.status(200).json({
                 token: jwtSignUser(user)
             })
 
-
-
-            // jwt.sign(
-            //     payload,
-            //     "randomString", {
-            //         expiresIn: 3600
-            //     },
-            //     (err, token) => {
-            //         if (err) throw err;
-            //         res.status(200).json({
-            //             token
-
-            //         });
-            //     }
-            // );
         } catch (err) {
             console.log(err.message);
             res.status(500).send("Error in Saving");
@@ -121,24 +100,6 @@ module.exports = {
                 token: jwtSignUser(user)
             })
 
-            // const payload = {
-            //     user: {
-            //         id: user.id
-            //     }
-            // };
-
-            // jwt.sign(
-            //     payload,
-            //     "randomString", {
-            //         expiresIn: 3600
-            //     },
-            //     (err, token) => {
-            //         if (err) throw err;
-            //         res.status(200).json({
-            //             token
-            //         });
-            //     }
-            // );
         } catch (e) {
             console.error(e);
             res.status(500).json({

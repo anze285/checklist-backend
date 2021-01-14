@@ -3,6 +3,8 @@ require('dotenv').config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require('cors');
+const passport = require('passport')
+const passportMiddleware = require('./middleware/passport')
 
 const config = require('./config/config');
 
@@ -13,14 +15,23 @@ mongoose.connect(config.db, {
     // useFindAndModify: false
 });
 
-
 const app = express();
 app.use(cors())
+app.use(passport.initialize())
+passport.use(passportMiddleware)
+
+app.use(express.urlencoded({
+    extended: true
+}));
 app.use(express.json());
 
 //ROUTES//
 
+const user = require('./routes/user')
+app.use("/user", user);
+
 //LISTENING//
+
 const port = process.env.PORT || 5000
 app.listen(port, () => {
     console.log('server has started on port ' + port);

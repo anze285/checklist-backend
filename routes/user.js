@@ -3,7 +3,6 @@ const {
     check
 } = require("express-validator");
 const router = express.Router();
-const User = require('../models/User')
 
 const AuthenticationController = require('../controllers/AuthenticationController')
 
@@ -40,8 +39,5 @@ router.post(
 router.get("/me", passport.authenticate("jwt", {
     session: false
 }), AuthenticationController.getUser);
-// router.get("/me", passport.authenticate("jwt", {session: false}), (req, res) => {
-//     res.send("HI!")
-// })
 
 module.exports = router;
