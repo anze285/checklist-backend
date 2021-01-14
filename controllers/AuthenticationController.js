@@ -16,7 +16,7 @@ function jwtSignUser(user) {
         surname: user.surname
     }, config.jwtSecret, {
         subject: `${user._id}`,
-        expiresIn: 86400
+        expiresIn: 1800
     })
 }
 
@@ -54,9 +54,8 @@ module.exports = {
                 email,
                 password
             });
-
-            const salt = await bcrypt.genSalt(10);
-            user.password = await bcrypt.hash(password, salt);
+            
+            user.password = await bcrypt.hash(password, 10);
 
             await user.save();
 
