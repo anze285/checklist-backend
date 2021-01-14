@@ -11,10 +11,13 @@ const passport = require('passport')
 router.post(
     "/register",
     [
-        check("name", "Please Enter a Valid Username")
+        check("name", "Please Enter a Valid Name")
         .not()
         .isEmpty(),
-        check("surname", "Please Enter a Valid Username")
+        check("surname", "Please Enter a Valid Surname")
+        .not()
+        .isEmpty(),
+        check("username", "Please Enter a Valid Username")
         .not()
         .isEmpty(),
         check("email", "Please enter a valid email").isEmail(),

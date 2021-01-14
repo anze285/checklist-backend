@@ -33,6 +33,7 @@ module.exports = {
         const {
             name,
             surname,
+            username,
             email,
             password,
         } = req.body;
@@ -49,6 +50,7 @@ module.exports = {
             user = new User({
                 name,
                 surname,
+                username,
                 email,
                 password
             });

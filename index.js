@@ -28,7 +28,7 @@ app.use(express.json());
 //ROUTES//
 
 const user = require('./routes/user')
-app.use("/user", user);
+app.use("/api/user", user);
 
 //LISTENING//
 
