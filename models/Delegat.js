@@ -2,8 +2,8 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema;
 
 const DelegatSchema = new Schema({
-    primary: {
-        type: Number,
+    dateAdd: {
+        type: Date,
         required: false
     },
     user: {

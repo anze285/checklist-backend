@@ -28,9 +28,14 @@ app.use(express.json());
 //ROUTES//
 
 const user = require('./routes/user')
+const project = require('./routes/project')
 const item = require('./routes/item')
+const status = require('./routes/status')
+
 app.use("/api/user", user)
+app.use("/api/project", project)
 app.use("/api/item", item)
+app.use("/api/status", status)
 
 //LISTENING//
 
