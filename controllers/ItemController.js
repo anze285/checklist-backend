@@ -48,8 +48,10 @@ module.exports = {
                 description,
                 tags,
                 deadline,
+                dateAdd: new Date().getTime(),
+                dateModify: new Date().getTime(),
                 parentItem,
-                owner,
+                owner: req.user.id,
                 status
             });
             
@@ -74,26 +76,27 @@ module.exports = {
                 deadline,
                 parentItem,
                 owner,
-                status
+                status,
             } = req.body;
-
+                
             const updatedItem = await Item.findByIdAndUpdate(req.params.id, {
                 title,
                 description,
                 tags,
                 deadline,
-                parentItem,
-                owner,
+                dateModify: new Date().getTime(),
                 status
             }, {new: true, useFindAndModify: false})
 
             res.status(200).json({
                 message: "Successfuly updated an item",
             })
+
         } catch (e) {
             res.send({
                 message: "Error updating Item"
             });
+            console.log(e)
         }
     },
     async delete(req, res) {

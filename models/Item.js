@@ -18,6 +18,14 @@ const ItemSchema = new Schema({
         type: Date,
         required: false
     },
+    dateAdd: {
+        type: Date,
+        required: true
+    },
+    dateModify: {
+        type: Date,
+        required: true
+    },    
     parentItem: {
         type: mongoose.Types.ObjectId,
         ref: 'Item'
