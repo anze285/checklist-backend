@@ -18,17 +18,14 @@ const ItemSchema = new Schema({
         type: Date,
         required: false
     },
-    public: {
-        type: Number,
-        required: true
-    },
     parentItem: {
         type: mongoose.Types.ObjectId,
         ref: 'Item'
     },
     owner: {
         type: mongoose.Types.ObjectId,
-        ref: 'User'
+        ref: 'User',
+        required: true
     },
     status: {
         type: mongoose.Types.ObjectId,

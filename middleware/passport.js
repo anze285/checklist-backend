@@ -6,7 +6,7 @@ const config = require('../config/config')
 const opts = {}
 
 module.exports = new JwtStrategy({
-    jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme('JWT'),
+    jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
     secretOrKey: config.jwtSecret
 }, (token, done) => {
     return done(null, token);

@@ -1,18 +1,20 @@
 const Item = require('../models/item')
 
-const config = require('../config/config');
+const config = require('../config/config')
 
 module.exports = {
 
     async all(req, res) {
         try {
-            const items = await Item.find();
+            const items = await Item.find({owner: req.user.id, parentItem: null});
+
             res.json({
                 items: items
             })
         } catch (e) {
             res.send({
-                msg: "Error fetching items"
+                msg: "Error fetching items",
+                msg: req.user.id
             })
         }
     },
@@ -36,7 +38,6 @@ module.exports = {
                 description,
                 tags,
                 deadline,
-                public,
                 parentItem,
                 owner,
                 status
@@ -47,7 +48,6 @@ module.exports = {
                 description,
                 tags,
                 deadline,
-                public,
                 parentItem,
                 owner,
                 status
@@ -72,7 +72,6 @@ module.exports = {
                 description,
                 tags,
                 deadline,
-                public,
                 parentItem,
                 owner,
                 status
@@ -83,7 +82,6 @@ module.exports = {
                 description,
                 tags,
                 deadline,
-                public,
                 parentItem,
                 owner,
                 status
@@ -101,11 +99,19 @@ module.exports = {
     async delete(req, res) {
         try {
             const item = await Item.findById(req.params.id)
+
             if(item !== null){
-                const deletedItem = await Item.findByIdAndDelete(req.params.id)
-                res.status(200).json({
-                    message: "Successfuly deleted an item"
-                })
+                if(item.owner == req.user.id){
+                    const deletedItem = await Item.findByIdAndDelete(req.params.id)
+                    res.status(200).json({
+                        message: "Successfuly deleted an item"
+                    })
+                }
+                else{
+                 res.send({
+                    message: "you are not owner of this item"
+                })   
+                }
             }
             else {
                 res.send({

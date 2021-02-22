@@ -3,17 +3,28 @@ const {
     check
 } = require("express-validator");
 const router = express.Router();
+const passport = require("passport")
 
 const ItemController = require('../controllers/ItemController')
 
-router.get("/", ItemController.all)
+router.get("/", passport.authenticate("jwt", {
+    session: false
+}), ItemController.all)
 
-router.get("/:id", ItemController.single)
+router.get("/:id", passport.authenticate("jwt", {
+    session: false
+}), ItemController.single)
 
-router.post("/", ItemController.post)
+router.post("/", passport.authenticate("jwt", {
+    session: false
+}), ItemController.post)
 
-router.put("/:id", ItemController.put)
+router.put("/:id", passport.authenticate("jwt", {
+    session: false
+}), ItemController.put)
 
-router.delete("/:id",  ItemController.delete)
+router.delete("/:id", passport.authenticate("jwt", {
+    session: false
+}),  ItemController.delete)
 
 module.exports = router;
