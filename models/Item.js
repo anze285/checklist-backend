@@ -38,7 +38,7 @@ const ItemSchema = new Schema({
     status: {
         type: mongoose.Types.ObjectId,
         ref: 'Status',
-        required: true
+        required: false
     }
 })
 

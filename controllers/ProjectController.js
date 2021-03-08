@@ -38,8 +38,6 @@ module.exports = {
                 description,
                 tags,
                 deadline,
-                parentItem,
-                owner,
                 status
             } = req.body;
 
@@ -50,7 +48,6 @@ module.exports = {
                 deadline,
                 dateAdd: new Date().getTime(),
                 dateModify: new Date().getTime(),
-                parentItem,
                 owner: req.user.id,
                 status
             });
