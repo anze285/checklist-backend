@@ -16,7 +16,7 @@ function jwtSignUser(user) {
         surname: user.surname
     }, config.jwtSecret, {
         subject: `${user._id}`,
-        expiresIn: 1800
+        expiresIn: 86400
     })
 }
 
