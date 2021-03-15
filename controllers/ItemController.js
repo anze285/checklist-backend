@@ -6,18 +6,24 @@ module.exports = {
 
     async all(req, res) {
         try {
-            Item.find({parentItem: req.body.parentItem}, function (err, results){
-                if(err){
-                    res.send({
-                        items: []
-                    })
-                }
-                else{
-                    res.json({
-                        items: results
-                    })
-                }
-            });    
+            const items = await Item.find({parentItem: req.body.parentItem})
+            res.status(200).json({
+                items: items
+            });
+            // await Item.find({parentItem: req.body.parentItem}, function (err, results){
+            //     if(err){
+            //         res.send({
+            //             items: []
+            //         })
+            //     }
+                
+            //     else{
+            //         console.log("Dela" + results)
+            //         res.json({
+            //             items: results
+            //         })
+            //     }
+            // });    
         } catch (e) {
             res.send({
                 msg: "Error fetching items"
@@ -39,13 +45,13 @@ module.exports = {
     },
     async post(req, res) {
         try {
+            console.log(req.body)
             const {
                 title,
                 description,
                 tags,
                 deadline,
                 parentItem,
-                owner,
                 status
             } = req.body;
 

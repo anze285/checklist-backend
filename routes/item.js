@@ -7,9 +7,7 @@ const passport = require("passport")
 
 const ItemController = require('../controllers/ItemController')
 
-router.post("/all", passport.authenticate("jwt", {
-    session: false
-}), ItemController.all)
+router.post("/all", ItemController.all)
 
 router.get("/:id", passport.authenticate("jwt", {
     session: false
