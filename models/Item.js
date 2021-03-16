@@ -39,7 +39,13 @@ const ItemSchema = new Schema({
         type: mongoose.Types.ObjectId,
         ref: 'Status',
         required: false
-    }
+    },
+    users: [
+        {
+            type: mongoose.Types.ObjectId,
+            ref: 'User'
+        }
+    ]
 })
 
 const Item = mongoose.model('Item', ItemSchema)
