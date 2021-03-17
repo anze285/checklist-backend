@@ -6,17 +6,32 @@ module.exports = {
 
     async all(req, res) {
         try {
-            const items = await Item.find({parentItem: req.body.parentItem})
+            let listItems = []
+            const lists = await Item.find({
+                parentItem: req.body.parentItem
+            })
+
+            for(let x = 0; x<lists.length; x++) {
+                const items = await Item.find({
+                    parentItem: lists[x]._id
+                });
+                listItems.push({
+                    list: lists[x],
+                    items: items
+                })
+            }
+
             res.status(200).json({
-                items: items
-            });
+                items: listItems
+            })
+
             // await Item.find({parentItem: req.body.parentItem}, function (err, results){
             //     if(err){
             //         res.send({
             //             items: []
             //         })
             //     }
-                
+
             //     else{
             //         console.log("Dela" + results)
             //         res.json({
@@ -66,7 +81,7 @@ module.exports = {
                 owner: req.user.id,
                 status
             });
-            
+
             await item.save()
 
             res.status(200).json({
@@ -88,7 +103,7 @@ module.exports = {
                 deadline,
                 status,
             } = req.body;
-                
+
             const updatedItem = await Item.findByIdAndUpdate(req.params.id, {
                 title,
                 description,
@@ -96,7 +111,10 @@ module.exports = {
                 deadline,
                 dateModify: new Date().getTime(),
                 status
-            }, {new: true, useFindAndModify: false})
+            }, {
+                new: true,
+                useFindAndModify: false
+            })
 
             res.status(200).json({
                 message: "Successfuly updated an item",
@@ -113,20 +131,18 @@ module.exports = {
         try {
             const item = await Item.findById(req.params.id)
 
-            if(item !== null){
-                if(item.owner == req.user.id){
+            if (item !== null) {
+                if (item.owner == req.user.id) {
                     const deletedItem = await Item.findByIdAndDelete(req.params.id)
                     res.status(200).json({
                         message: "Successfuly deleted an item"
                     })
+                } else {
+                    res.send({
+                        message: "you are not owner of this item"
+                    })
                 }
-                else{
-                 res.send({
-                    message: "you are not owner of this item"
-                })   
-                }
-            }
-            else {
+            } else {
                 res.send({
                     message: "item with this id does not exists"
                 })
