@@ -19,7 +19,7 @@ router.post("/", passport.authenticate("jwt", {
 
 router.put("/:id", passport.authenticate("jwt", {
     session: false
-}), ItemController.put)
+}), ItemController.updateListItems)
 
 router.delete("/:id", passport.authenticate("jwt", {
     session: false

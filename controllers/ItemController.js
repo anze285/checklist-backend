@@ -11,7 +11,7 @@ module.exports = {
                 parentItem: req.body.parentItem
             })
 
-            for(let x = 0; x<lists.length; x++) {
+            for (let x = 0; x < lists.length; x++) {
                 const items = await Item.find({
                     parentItem: lists[x]._id
                 });
@@ -25,20 +25,6 @@ module.exports = {
                 items: listItems
             })
 
-            // await Item.find({parentItem: req.body.parentItem}, function (err, results){
-            //     if(err){
-            //         res.send({
-            //             items: []
-            //         })
-            //     }
-
-            //     else{
-            //         console.log("Dela" + results)
-            //         res.json({
-            //             items: results
-            //         })
-            //     }
-            // });    
         } catch (e) {
             res.send({
                 msg: "Error fetching items"
@@ -127,6 +113,29 @@ module.exports = {
             console.log(e)
         }
     },
+    async updateListItems(req, res) {
+        try {
+            const {newListId} = req.body
+
+            const updatedItem = await Item.findByIdAndUpdate(req.params.id, {
+                parentItem: newListId
+            }, {
+                new: true,
+                useFindAndModify: false
+            })
+
+            res.status(200).json({
+                message: "Successfuly updated an item",
+            })
+
+        } catch (e) {
+            res.send({
+                message: "Error updating Item"
+            });
+            console.log(e)
+        }
+    },
+
     async delete(req, res) {
         try {
             const item = await Item.findById(req.params.id)
