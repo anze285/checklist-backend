@@ -31,17 +31,17 @@ const user = require('./routes/user')
 const project = require('./routes/project')
 const item = require('./routes/item')
 const status = require('./routes/status')
-//const google = require('./routes/google')
 
 app.use("/api/user", user)
 app.use("/api/project", project)
 app.use("/api/item", item)
 app.use("/api/status", status)
-// app.use("/api/google", google)
 
 //OAUTH2CALLBACK
 
 app.use("/oauth2callback", require('./oauth2callback'))
+app.use("/ds", require("./routes/drivesinhronization"))
+//app.use("/google", require("./google"))
 
 //LISTENING//
 

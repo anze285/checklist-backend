@@ -7,7 +7,6 @@ module.exports = {
     async all(req, res) {
         try {
             const items = await Item.find({owner: req.user.id, parentItem: null});
-
             res.json({
                 items: items
             })
