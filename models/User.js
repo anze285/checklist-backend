@@ -21,7 +21,11 @@ const UserSchema = new Schema({
     password: {
         type: String,
         required: true
-    }
+    },
+    active: {
+        type: Boolean,
+        default: false
+    },
 })
 
 const User = mongoose.model('User', UserSchema)
