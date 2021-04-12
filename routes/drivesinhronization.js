@@ -17,7 +17,10 @@ const {
     ContextHandlerImpl
 } = require("express-validator/src/chain");
 
+let Projects = [];
 let Items = [];
+let Objects = [];
+let ids = [];
 
 // If modifying these scopes, delete token.json.
 const SCOPES = ['https://www.googleapis.com/auth/drive.file'];
@@ -27,13 +30,17 @@ const SCOPES = ['https://www.googleapis.com/auth/drive.file'];
 const TOKEN_PATH = 'token.json';
 
 router.get("/", async (req, res) => {
+    Projects = [];
+    Items = [];
+    Objects = [];
+    ids = [];
     // Load client secrets from a local file.
     const items = await Item.find({
         owner: "606398b22f7dd2424c61a931",
         parentItem: null
     });
     //Items += items;
-    Items.push({
+    Projects.push({
         items: items
     })
     for (let x = 0; x < items.length; x++) {
@@ -50,7 +57,7 @@ router.get("/", async (req, res) => {
                 parentItem: elements[y]._id
             })
             //Items += objects
-            Items.push({
+            Objects.push({
                 items: objects
             })
         }
@@ -83,39 +90,84 @@ function authorize(credentials, res) {
     });
 }
 
+
 function synchronize(auth, token) {
     const drive = google.drive({
         version: 'v3',
         auth
     });
-    let ids = []
-    console.log(Items[0].items.length)
+    for (let x = 0; x < Projects[0].items.length; x++) {
+
+        var fileMetadata = {
+            'name': Projects[0].items[x].title,
+            'mimeType': 'application/vnd.google-apps.folder',
+            parents: [token.folder_id]
+        };
+        itemId = []
+        drive.files.create({
+            resource: fileMetadata,
+            fields: 'id'
+        }, function (err, file) {
+            if (err) {
+                // Handle error
+                console.error(err);
+            } else {
+                console.log("Projekt")
+                console.log('Folder Id: ', file.data.id);
+                ids.push({
+                    item_id: Projects[0].items[x]._id,
+                    folder_id: file.data.id
+                })
+            }
+            if ((x + 1) == Projects[0].items.length) {
+
+                /*function waitingItems (auth, token){
+                    console.log("-")
+                    console.log(ids.length)
+                    console.log(Projects[0].items.length)
+                    if (ids.length == Projects[0].items.length){
+                        synchronizeItems(auth,token)
+                    }
+                    else{
+                        setTimeout(waitingItems(auth, token), 500)
+                    }
+                }
+                waitingItems(auth, token)*/
+
+                setTimeout(() => synchronizeItems(auth, token), 1000)
+            }
+        })
+    }
+}
+
+function synchronizeItems(auth, token) {
+    const drive = google.drive({
+        version: 'v3',
+        auth
+    });
+    let itemId = null;
+    //let itemIdOriginal = [];
     for (let x = 0; x < Items.length; x++) {
         for (let y = 0; y < Items[x].items.length; y++) {
-            let itemId = [];
             if (Items[x].items[y].parentItem) {
                 if (ids.length > 0) {
-                    itemId = ids.map(id => {
-                        console.log(id.item_id)
-                        console.log("next one")
-                        console.log(Items[x].items[y]._id)
-                        if (id.item_id == Items[x].items[y]._id) {
-                            return id.folder_id
-                        } else {
-                            return null
+                    for (let z = 0; z < ids.length; z++) {
+                        itemId = token.folder_id
+                        if (ids[z].item_id.toString() == Items[x].items[y].parentItem.toString()) {
+                            itemId = ids[z].folder_id
+                            break
                         }
-                    });
+                    }
                 }
             } else {
-                itemId.push(token.folder_id);
+                itemId = token.folder_id
             }
 
             var fileMetadata = {
                 'name': Items[x].items[y].title,
                 'mimeType': 'application/vnd.google-apps.folder',
-                parents: [itemId[0]]
+                parents: [itemId]
             };
-            itemId = []
             drive.files.create({
                 resource: fileMetadata,
                 fields: 'id'
@@ -124,40 +176,17 @@ function synchronize(auth, token) {
                     // Handle error
                     console.error(err);
                 } else {
+                    console.log("Item")
                     console.log('Folder Id: ', file.data.id);
                     ids.push({
                         item_id: Items[x].items[y]._id,
                         folder_id: file.data.id
                     })
-                    //console.log(ids)
                 }
-            }).then(()=> {})
-            
+                //consolelog()
+            })
         }
     }
 }
-
-/*function mapa(auth, token) {
-    const drive = google.drive({
-        version: 'v3',
-        auth
-    });
-    var fileMetadata = {
-        'name': 'folder',
-        'mimeType': 'application/vnd.google-apps.folder',
-        parents: [token.folder_id]
-    };
-    drive.files.create({
-        resource: fileMetadata,
-        fields: 'id'
-    }, function (err, file) {
-        if (err) {
-            // Handle error
-            console.error(err);
-        } else {
-            console.log('File Id: ', file.data.id);
-        }
-    });
-}*/
 
 module.exports = router;
