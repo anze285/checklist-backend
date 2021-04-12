@@ -14,6 +14,11 @@ const TokenSchema = new Schema({
         type: mongoose.Types.ObjectId,
         required: true,
         ref: 'User'
+    },
+    project: {
+        type: mongoose.Types.ObjectId,
+        required: false,
+        ref: 'Item'
     }
 
 })

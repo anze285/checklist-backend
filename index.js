@@ -25,6 +25,12 @@ app.use(express.urlencoded({
 }));
 app.use(express.json());
 
+app.use(function (err, req, res, next) {
+    if (err.name === 'UnauthorizedError') {
+        res.send(401, 'invalid token...');
+    }
+});
+
 //ROUTES//
 
 const user = require('./routes/user')

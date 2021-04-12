@@ -46,7 +46,6 @@ module.exports = {
     },
     async post(req, res) {
         try {
-            console.log(req.body)
             const {
                 title,
                 description,

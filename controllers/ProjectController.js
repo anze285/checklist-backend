@@ -1,4 +1,8 @@
 const Item = require('../models/Item')
+const Token = require('../models/Token')
+
+const crypto = require('crypto');
+const nodemailer = require('nodemailer')
 
 const config = require('../config/config')
 
@@ -6,9 +10,14 @@ module.exports = {
 
     async all(req, res) {
         try {
-            const items = await Item.find({owner: req.user.id, parentItem: null});
+            const userCreated = await Item.find({
+                owner: req.user.id,
+                parentItem: null
+            });
+            const userInvited = await Item.find({parentItem: null, users: req.user.id})
             res.json({
-                items: items
+                items: userCreated,
+                invited: userInvited
             })
         } catch (e) {
             res.send({
@@ -21,8 +30,12 @@ module.exports = {
         try {
             const itemId = req.params.id
             const item = await Item.findById(itemId)
+            const token = await Token.findOne({
+                project: item._id
+            })
             res.status(200).json({
-                item: item
+                item: item,
+                inviteLink: token.token
             })
         } catch (error) {
             res.send({
@@ -50,8 +63,16 @@ module.exports = {
                 owner: req.user.id,
                 status
             });
-            
+
             await item.save()
+
+            const token = new Token({
+                token: crypto.randomBytes(16).toString('hex'),
+                user: req.user.id,
+                project: item._id
+            })
+
+            await token.save()
 
             res.status(200).json({
                 msg: 'Successfuly added an item'
@@ -74,7 +95,7 @@ module.exports = {
                 owner,
                 status,
             } = req.body;
-                
+
             const updatedItem = await Item.findByIdAndUpdate(req.params.id, {
                 title,
                 description,
@@ -82,7 +103,10 @@ module.exports = {
                 deadline,
                 dateModify: new Date().getTime(),
                 status
-            }, {new: true, useFindAndModify: false})
+            }, {
+                new: true,
+                useFindAndModify: false
+            })
 
             res.status(200).json({
                 message: "Successfuly updated an item",
@@ -95,24 +119,67 @@ module.exports = {
             console.log(e)
         }
     },
+    async inviteLink(req, res) {
+        try {
+            console.log(req.user)
+            const token = await Token.findOne({
+                token: req.params.inviteLink
+            })
+            const project = await Item.findById(token.project)
+
+            if (req.user.id != project.owner) {
+                const filteredUsers = project.users.filter(user => {
+                    if (user !== req.user.id) {
+                        return user
+                    }
+                })
+                if (filteredUsers.length > 0) {
+                    res.status(400).json({
+                        message: "Napaka. Ste že član tega projekta."
+                    })
+                } else {
+                    if (req.user) {
+                        project.users.push(req.user.id)
+                        project.save()
+                        res.status(200).json({
+                            message: "Successfuly added the user to the project"
+                        })
+                    } else {
+                        res.status(400).json({
+                            message: "Napaka pri dodajanju člana v projekt. Poskusite ponovno kasneje."
+                        })
+                    }
+                }
+            } else {
+                res.status(400).json({
+                    message: "Napaka. Ste že član tega projekta."
+                })
+            }
+
+
+        } catch (e) {
+            res.send({
+                message: "Napaka pri dodajanju uporabnika v projekt"
+            })
+            console.log(e)
+        }
+    },
     async delete(req, res) {
         try {
             const item = await Item.findById(req.params.id)
 
-            if(item !== null){
-                if(item.owner == req.user.id){
+            if (item !== null) {
+                if (item.owner == req.user.id) {
                     const deletedItem = await Item.findByIdAndDelete(req.params.id)
                     res.status(200).json({
                         message: "Successfuly deleted an item"
                     })
+                } else {
+                    res.send({
+                        message: "you are not owner of this item"
+                    })
                 }
-                else{
-                 res.send({
-                    message: "you are not owner of this item"
-                })   
-                }
-            }
-            else {
+            } else {
                 res.send({
                     message: "item with this id does not exists"
                 })
