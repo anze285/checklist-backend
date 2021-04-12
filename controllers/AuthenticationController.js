@@ -50,64 +50,66 @@ module.exports = {
                 return res.status(400).json({
                     msg: "User Already Exists"
                 });
-            }
-
-            user = new User({
-                name,
-                surname,
-                username,
-                email,
-                password
-            });
-
-            user.password = await bcrypt.hash(password, 10);
-
-            await user.save();
-
-            const token = new Token({
-                user: user._id,
-                token: crypto.randomBytes(16).toString('hex')
-            });
-
-            await token.save();
-
-            const transport = nodemailer.createTransport({
-                host: "smtp.gmail.com",
-                port: 587,
-                secure: false,
-                auth: {
-                    user: config.nodemailer_user,
-                    pass: config.nodemailer_pass,
-                },
-            });
-
-            if (process.env.NODE_ENV === 'production') {
-                transport.sendMail({
-                    from: `"Checky ⚡️" <${config.nodemailer_user}>`,
-                    to: user.email,
-                    subject: "Prosimo, da potrdite vaš račun.",
-                    html: `<h1>Potrditev e-poštnega naslova</h1>
-            <h2>Pozdravljen ${user.username}!</h2>
-            <p>Hvala za registracijo. Prosim potrdi račun s klikom na sledeči link: <a href=https://checky-app.herokuapp.com/verify/${token.token}>Klikni tukaj</a></p>
-            </div>`,
-
-                })
             } else {
-                transport.sendMail({
-                    from: `"Checky ⚡️" <${config.nodemailer_user}>`,
-                    to: user.email,
-                    subject: "Prosimo, da potrdite vaš račun.",
-                    html: `<h1>Potrditev e-poštnega naslova</h1>
-            <h2>Pozdravljen ${user.username}!</h2>
-            <p>Hvala za registracijo. Prosim potrdi račun s klikom na sledeči link: <a href=http://localhost:8080/verify/${token.token}>Klikni tukaj</a></p>
-            </div>`,
-                }).catch(err => console.log(err));
+                user = new User({
+                    name,
+                    surname,
+                    username,
+                    email,
+                    password
+                });
+    
+                user.password = await bcrypt.hash(password, 10);
+    
+                await user.save();
+    
+                const token = new Token({
+                    user: user._id,
+                    token: crypto.randomBytes(16).toString('hex')
+                });
+    
+                await token.save();
+    
+                const transport = nodemailer.createTransport({
+                    host: "smtp.gmail.com",
+                    port: 587,
+                    secure: false,
+                    auth: {
+                        user: config.nodemailer_user,
+                        pass: config.nodemailer_pass,
+                    },
+                });
+    
+                if (process.env.NODE_ENV === 'production') {
+                    transport.sendMail({
+                        from: `"Checky ⚡️" <${config.nodemailer_user}>`,
+                        to: user.email,
+                        subject: "Prosimo, da potrdite vaš račun.",
+                        html: `<h1>Potrditev e-poštnega naslova</h1>
+                <h2>Pozdravljen ${user.username}!</h2>
+                <p>Hvala za registracijo. Prosim potrdi račun s klikom na sledeči link: <a href=https://checky-app.herokuapp.com/verify/${token.token}>Klikni tukaj</a></p>
+                </div>`,
+    
+                    })
+                } else {
+                    transport.sendMail({
+                        from: `"Checky ⚡️" <${config.nodemailer_user}>`,
+                        to: user.email,
+                        subject: "Prosimo, da potrdite vaš račun.",
+                        html: `<h1>Potrditev e-poštnega naslova</h1>
+                <h2>Pozdravljen ${user.username}!</h2>
+                <p>Hvala za registracijo. Prosim potrdi račun s klikom na sledeči link: <a href=http://localhost:8080/verify/${token.token}>Klikni tukaj</a></p>
+                </div>`,
+                    }).catch(err => console.log(err));
+                }
+    
+    
+                return res.status(200).json({
+                    token: jwtSignUser(user)
+                })
+
             }
 
-
-            return res.status(200).json({
-                token: jwtSignUser(user)
-            })
 
         } catch (err) {
             console.log(err.message);
@@ -117,6 +119,8 @@ module.exports = {
 
     async login(req, res) {
         const errors = validationResult(req);
+
+        console.log(errors)
 
         if (!errors.isEmpty()) {
             return res.status(400).json({
@@ -149,6 +153,7 @@ module.exports = {
 
         } catch (e) {
             console.error(e);
+            console.log("HAHA")
             res.status(500).json({
                 message: "Server Error"
             });
@@ -157,7 +162,6 @@ module.exports = {
 
     async verifyUser(req, res) {
         try {
-            console.log(req.params.confirmationCode)
             const token = await Token.findOne({
                 token: req.params.confirmationCode
             })
