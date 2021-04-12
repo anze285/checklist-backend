@@ -153,7 +153,6 @@ module.exports = {
 
         } catch (e) {
             console.error(e);
-            console.log("HAHA")
             res.status(500).json({
                 message: "Server Error"
             });
