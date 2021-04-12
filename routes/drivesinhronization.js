@@ -135,6 +135,7 @@ function synchronize(auth, token) {
                 waitingItems(auth, token)*/
 
                 setTimeout(() => synchronizeItems(auth, token), 1000)
+                //synchronizeItems(auth, token)
             }
         })
     }
@@ -180,6 +181,57 @@ function synchronizeItems(auth, token) {
                     console.log('Folder Id: ', file.data.id);
                     ids.push({
                         item_id: Items[x].items[y]._id,
+                        folder_id: file.data.id
+                    })
+                }
+                if ((x + 1) == Items.length && (y + 1) == Items[x].items.length) {
+                setTimeout(() => synchronizeObjects(auth, token), 1000)
+            }
+            })
+        }
+    }
+}
+
+function synchronizeObjects(auth, token) {
+    const drive = google.drive({
+        version: 'v3',
+        auth
+    });
+    let itemId = null;
+    //let itemIdOriginal = [];
+    for (let x = 0; x < Objects.length; x++) {
+        for (let y = 0; y < Objects[x].items.length; y++) {
+            if (Objects[x].items[y].parentItem) {
+                if (ids.length > 0) {
+                    for (let z = 0; z < ids.length; z++) {
+                        itemId = token.folder_id
+                        if (ids[z].item_id.toString() == Objects[x].items[y].parentItem.toString()) {
+                            itemId = ids[z].folder_id
+                            break
+                        }
+                    }
+                }
+            } else {
+                itemId = token.folder_id
+            }
+
+            var fileMetadata = {
+                'name': Objects[x].items[y].title,
+                'mimeType': 'application/vnd.google-apps.folder',
+                parents: [itemId]
+            };
+            drive.files.create({
+                resource: fileMetadata,
+                fields: 'id'
+            }, function (err, file) {
+                if (err) {
+                    // Handle error
+                    console.error(err);
+                } else {
+                    console.log("Object")
+                    console.log('Folder Id: ', file.data.id);
+                    ids.push({
+                        item_id: Objects[x].items[y]._id,
                         folder_id: file.data.id
                     })
                 }
