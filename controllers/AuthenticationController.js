@@ -17,7 +17,8 @@ function jwtSignUser(user) {
         id: user._id,
         email: user.email,
         name: user.name,
-        surname: user.surname
+        surname: user.surname,
+        active: user.active
     }, config.jwtSecret, {
         subject: `${user._id}`,
         expiresIn: 86400
@@ -71,7 +72,7 @@ module.exports = {
             await token.save();
 
             const transport = nodemailer.createTransport({
-                host: "smtp.gmail.com.",
+                host: "smtp.gmail.com",
                 port: 587,
                 secure: false,
                 auth: {
@@ -80,17 +81,29 @@ module.exports = {
                 },
             });
 
-            transport.sendMail({
-                from: `"Checky 👻" <${config.nodemailer_user}>'`,
-                to: user.email,
-                subject: "Prosimo, da potrdite vaš račun.",
-                html: `<h1>Potrditev e-poštnega naslova</h1>
-        <h2>Pozdravljen ${user.username}!</h2>
-        < p > Hvala za registracijo.Prosim potrdi račun s klikom na link <a href=http://localhost:5000/api/user/verify/${token.token}>Klikni tukaj</a></p>
-        
-        </div>`,
+            if (process.env.NODE_ENV === 'production') {
+                transport.sendMail({
+                    from: `"Checky ⚡️" <${config.nodemailer_user}>`,
+                    to: user.email,
+                    subject: "Prosimo, da potrdite vaš račun.",
+                    html: `<h1>Potrditev e-poštnega naslova</h1>
+            <h2>Pozdravljen ${user.username}!</h2>
+            <p>Hvala za registracijo. Prosim potrdi račun s klikom na sledeči link: <a href=https://checky-app.herokuapp.com/verify/${token.token}>Klikni tukaj</a></p>
+            </div>`,
 
-            }).catch(err => console.log(err));
+                })
+            } else {
+                transport.sendMail({
+                    from: `"Checky ⚡️" <${config.nodemailer_user}>`,
+                    to: user.email,
+                    subject: "Prosimo, da potrdite vaš račun.",
+                    html: `<h1>Potrditev e-poštnega naslova</h1>
+            <h2>Pozdravljen ${user.username}!</h2>
+            <p>Hvala za registracijo. Prosim potrdi račun s klikom na sledeči link: <a href=http://localhost:8080/verify/${token.token}>Klikni tukaj</a></p>
+            </div>`,
+                }).catch(err => console.log(err));
+            }
+
 
             return res.status(200).json({
                 token: jwtSignUser(user)
@@ -144,6 +157,7 @@ module.exports = {
 
     async verifyUser(req, res) {
         try {
+            console.log(req.params.confirmationCode)
             const token = await Token.findOne({
                 token: req.params.confirmationCode
             })
@@ -154,8 +168,8 @@ module.exports = {
                     useFindAndModify: false
                 })
 
-                if(user) {
-                    if(token) {
+                if (user) {
+                    if (token) {
                         await Token.findByIdAndDelete(token._id)
                     }
                     res.status(200).json({
