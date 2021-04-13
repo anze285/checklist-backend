@@ -29,7 +29,6 @@ let ids = [];
 const TOKEN_PATH = 'token.json';
 
 router.get("/", async (req, res) => {
-    console.log("nov request")
     Projects = [];
     Items = [];
     Objects = [];
@@ -116,8 +115,7 @@ function synchronize(auth, token) {
                         console.log("ERROR: There are 2 folders with the same name")
                     } else if (res.data.files[0]) {
                         res.data.files.forEach(function (originalFolder) {
-                            console.log(originalFolder)
-                            console.log('Found file: ', originalFolder.name, originalFolder.id);
+                            //console.log('Found file: ', originalFolder.name, originalFolder.id);
                             ids.push({
                                 item_id: Projects[0].items[x]._id,
                                 folder_id: originalFolder.id
@@ -138,8 +136,8 @@ function synchronize(auth, token) {
                                 // Handle error
                                 console.error(err);
                             } else {
-                                console.log("Project")
-                                console.log('Folder Id: ', file.data.id);
+                                //console.log("Project")
+                                //console.log('Folder Id: ', file.data.id);
                                 ids.push({
                                     item_id: Projects[0].items[x]._id,
                                     folder_id: file.data.id
@@ -215,8 +213,7 @@ function synchronizeItems(auth, token) {
                             console.log("ERROR: There are 2 folders with the same name")
                         } else if (res.data.files[0]) {
                             res.data.files.forEach(function (originalItem) {
-                                console.log(originalItem)
-                                console.log('Found file: ', originalItem.name, originalItem.id);
+                                //console.log('Found file: ', originalItem.name, originalItem.id);
                                 ids.push({
                                     item_id: Items[x].items[y]._id,
                                     folder_id: originalItem.id
@@ -250,8 +247,8 @@ function synchronizeItems(auth, token) {
                                     // Handle error
                                     console.error(err);
                                 } else {
-                                    console.log("Item")
-                                    console.log('Folder Id: ', file.data.id);
+                                    //console.log("Item")
+                                    //console.log('Folder Id: ', file.data.id);
                                     ids.push({
                                         item_id: Items[x].items[y]._id,
                                         folder_id: file.data.id
@@ -344,8 +341,6 @@ function synchronizeObjects(auth, token) {
                                     for (let z = 0; z < ids.length; z++) {
                                         itemId = token.folder_id
                                         if (ids[z].item_id.toString() == Objects[x].items[y].parentItem.toString()) {
-                                            console.log("tiskam")
-                                            console.log(ids[z].folder_id)
                                             itemId = ids[z].folder_id
                                             break
                                         }
@@ -368,8 +363,8 @@ function synchronizeObjects(auth, token) {
                                     // Handle error
                                     console.error(err);
                                 } else {
-                                    console.log("Object")
-                                    console.log('Folder Id: ', file.data.id);
+                                    //console.log("Object")
+                                    //console.log('Folder Id: ', file.data.id);
                                     ids.push({
                                         item_id: Objects[x].items[y]._id,
                                         folder_id: file.data.id
