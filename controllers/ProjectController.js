@@ -21,7 +21,6 @@ module.exports = {
                 parentItem: null,
                 users: req.user.id
             })
-            console.log(userInvited)
             res.json({
                 items: userCreated,
                 invited: userInvited
@@ -201,7 +200,7 @@ module.exports = {
                     subject: "Bili ste povabljeni v projekt!",
                     html: `
                     <h2>${req.user.name} vam je poslal povabilo za pridružitev k projektu ${project.title}!</h2>
-                    <p>Pridruži se s klikom na sledeči link: <a href=https://checky-app.herokuapp.com/project/invite/${token.token}>Klikni tukaj</a></p>
+                    <p>Pridruži se s klikom na sledeči link: <a href=https://checky-app.herokuapp.com/projects/invite/${token.token}>Klikni tukaj</a></p>
                     </div>`,
     
                 })

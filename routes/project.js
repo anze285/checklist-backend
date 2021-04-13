@@ -27,7 +27,9 @@ router.get("/invite/:inviteLink", passport.authenticate("jwt", {
     session: false
 }), ProjectController.inviteLink)
 
-router.post("/invite", passport.authenticate("jwt", {
+router.post("/invite", [
+    check("emails", "Please enter a valid email").isEmail(),
+], passport.authenticate("jwt", {
     session: false
 }), ProjectController.multipleInvite)
 
