@@ -36,7 +36,7 @@ router.get("/", async (req, res) => {
     ids = [];
     // Load client secrets from a local file.
     const items = await Item.find({
-        owner: "606398b22f7dd2424c61a931",
+        owner: "60753a34c79eb20004b1e6f7",
         parentItem: null
     });
     //Items += items;
@@ -118,6 +118,26 @@ function synchronize(auth, token) {
                     item_id: Projects[0].items[x]._id,
                     folder_id: file.data.id
                 })
+                var fileMetadata1 = {
+                        'name': (Projects[0].items[x].title + ".json"),
+                        parents: [file.data.id]
+                    };
+                    var media1 = {
+                        mimeType: 'application/json',
+                        body: JSON.stringify(Projects[0].items[x])
+                    };
+                    drive.files.create({
+                        resource: fileMetadata1,
+                        media: media1,
+                        fields: 'id'
+                    }, function (err, file1) {
+                        if (err) {
+                            // Handle error
+                            console.error(err);
+                        } else {
+                            console.log('File Id: ', file1.id);
+                        }
+                    });
             }
             if ((x + 1) == Projects[0].items.length) {
 
@@ -183,10 +203,30 @@ function synchronizeItems(auth, token) {
                         item_id: Items[x].items[y]._id,
                         folder_id: file.data.id
                     })
+                    var fileMetadata1 = {
+                        'name': (Items[x].items[y].title + ".json"),
+                        parents: [file.data.id]
+                    };
+                    var media1 = {
+                        mimeType: 'application/json',
+                        body: JSON.stringify(Items[x].items[y])
+                    };
+                    drive.files.create({
+                        resource: fileMetadata1,
+                        media: media1,
+                        fields: 'id'
+                    }, function (err, file1) {
+                        if (err) {
+                            // Handle error
+                            console.error(err);
+                        } else {
+                            console.log('File Id: ', file1.id);
+                        }
+                    });
                 }
                 if ((x + 1) == Items.length && (y + 1) == Items[x].items.length) {
-                setTimeout(() => synchronizeObjects(auth, token), 1000)
-            }
+                    setTimeout(() => synchronizeObjects(auth, token), 1000)
+                }
             })
         }
     }
@@ -234,6 +274,26 @@ function synchronizeObjects(auth, token) {
                         item_id: Objects[x].items[y]._id,
                         folder_id: file.data.id
                     })
+                    var fileMetadata1 = {
+                        'name': (Objects[x].items[y].title + ".json"),
+                        parents: [file.data.id]
+                    };
+                    var media1 = {
+                        mimeType: 'application/json',
+                        body: JSON.stringify(Objects[x].items[y])
+                    };
+                    drive.files.create({
+                        resource: fileMetadata1,
+                        media: media1,
+                        fields: 'id'
+                    }, function (err, file1) {
+                        if (err) {
+                            // Handle error
+                            console.error(err);
+                        } else {
+                            console.log('File Id: ', file1.id);
+                        }
+                    });
                 }
                 //consolelog()
             })
