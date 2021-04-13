@@ -10,11 +10,18 @@ module.exports = {
 
     async all(req, res) {
         try {
-            const userCreated = await Item.find({
+            let userCreated = await Item.find({
                 owner: req.user.id,
                 parentItem: null
             });
-            const userInvited = await Item.find({parentItem: null, users: req.user.id})
+            if (!userCreated) {
+                userCreated = null
+            }
+            const userInvited = await Item.find({
+                parentItem: null,
+                users: req.user.id
+            })
+            console.log(userInvited)
             res.json({
                 items: userCreated,
                 invited: userInvited
@@ -129,10 +136,11 @@ module.exports = {
 
             if (req.user.id != project.owner) {
                 const filteredUsers = project.users.filter(user => {
-                    if (user !== req.user.id) {
-                        return user
+                    if (user == req.user.id) {
+                        return user //Če prijavljen uporabnik še ni v Arrayu, vrni id uporabnika v projektu
                     }
                 })
+
                 if (filteredUsers.length > 0) {
                     res.status(400).json({
                         message: "Napaka. Ste že član tega projekta."
@@ -152,7 +160,7 @@ module.exports = {
                 }
             } else {
                 res.status(400).json({
-                    message: "Napaka. Ste že član tega projekta."
+                    message: "Napaka. Ste lastnik tega projekta."
                 })
             }
 
