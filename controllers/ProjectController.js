@@ -128,7 +128,6 @@ module.exports = {
     },
     async inviteLink(req, res) {
         try {
-            console.log(req.user)
             const token = await Token.findOne({
                 token: req.params.inviteLink
             })
@@ -172,13 +171,61 @@ module.exports = {
             console.log(e)
         }
     },
+    async multipleInvite(req, res) {
+        try {
+            const {
+                projectId,
+                emails
+            } = req.body
+    
+            const token = await Token.findOne({
+                project: projectId
+            })
+    
+            const project = await Item.findById(projectId)
+    
+    
+            const transport = nodemailer.createTransport({
+                host: "smtp.gmail.com",
+                port: 587,
+                secure: false,
+                auth: {
+                    user: config.nodemailer_user,
+                    pass: config.nodemailer_pass,
+                },
+            });
+    
+                transport.sendMail({
+                    from: `"Checky ⚡️" <${config.nodemailer_user}>`,
+                    to: emails,
+                    subject: "Bili ste povabljeni v projekt!",
+                    html: `
+                    <h2>${req.user.name} vam je poslal povabilo za pridružitev k projektu ${project.title}!</h2>
+                    <p>Pridruži se s klikom na sledeči link: <a href=https://checky-app.herokuapp.com/project/invite/${token.token}>Klikni tukaj</a></p>
+                    </div>`,
+    
+                })
++                
+            res.status(200).json({
+                message: 'Povabilo je bilo uspešno poslano!'
+            })
+        } catch (error) {
+            console.log(error)
+            
+        }
+
+
+    },
     async delete(req, res) {
         try {
             const item = await Item.findById(req.params.id)
 
             if (item !== null) {
                 if (item.owner == req.user.id) {
+                    // item.child.remove()
                     const deletedItem = await Item.findByIdAndDelete(req.params.id)
+                    // const deletedLists = await Item.findOneAndDelete({parentItem: req.params.id})
+
                     res.status(200).json({
                         message: "Successfuly deleted an item"
                     })
