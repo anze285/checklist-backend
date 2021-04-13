@@ -23,13 +23,13 @@ let Objects = [];
 let ids = [];
 
 // If modifying these scopes, delete token.json.
-const SCOPES = ['https://www.googleapis.com/auth/drive.file'];
 // The file token.json stores the user's access and refresh tokens, and is
 // created automatically when the authorization flow completes for the first
 // time.
 const TOKEN_PATH = 'token.json';
 
 router.get("/", async (req, res) => {
+    console.log("nov request")
     Projects = [];
     Items = [];
     Objects = [];
@@ -97,67 +97,92 @@ function synchronize(auth, token) {
         auth
     });
     for (let x = 0; x < Projects[0].items.length; x++) {
-
-        var fileMetadata = {
-            'name': Projects[0].items[x].title,
-            'mimeType': 'application/vnd.google-apps.folder',
-            parents: [token.folder_id]
-        };
-        itemId = []
-        drive.files.create({
-            resource: fileMetadata,
-            fields: 'id'
-        }, function (err, file) {
+        var pageToken = null;
+        // Using the NPM module 'async'
+        async.doWhilst(function (callback) {
+            drive.files.list({
+                q: "mimeType = 'application/vnd.google-apps.folder'",
+                q: ("name='" + Projects[0].items[x].title + "'"),
+                fields: 'nextPageToken, files(id, name)',
+                spaces: 'drive',
+                pageToken: pageToken
+            }, function (err, res) {
+                if (err) {
+                    // Handle error
+                    console.error(err);
+                    callback(err)
+                } else {
+                    if (res.data.files[1]) {
+                        console.log("ERROR: There are 2 folders with the same name")
+                    } else if (res.data.files[0]) {
+                        res.data.files.forEach(function (originalFolder) {
+                            console.log(originalFolder)
+                            console.log('Found file: ', originalFolder.name, originalFolder.id);
+                            ids.push({
+                                item_id: Projects[0].items[x]._id,
+                                folder_id: originalFolder.id
+                            })
+                        });
+                    } else {
+                        var fileMetadata = {
+                            'name': Projects[0].items[x].title,
+                            'mimeType': 'application/vnd.google-apps.folder',
+                            parents: [token.folder_id]
+                        };
+                        itemId = []
+                        drive.files.create({
+                            resource: fileMetadata,
+                            fields: 'id'
+                        }, function (err, file) {
+                            if (err) {
+                                // Handle error
+                                console.error(err);
+                            } else {
+                                console.log("Project")
+                                console.log('Folder Id: ', file.data.id);
+                                ids.push({
+                                    item_id: Projects[0].items[x]._id,
+                                    folder_id: file.data.id
+                                })
+                                var fileMetadata1 = {
+                                    'name': (Projects[0].items[x].title + ".json"),
+                                    parents: [file.data.id]
+                                };
+                                var media1 = {
+                                    mimeType: 'application/json',
+                                    body: JSON.stringify(Projects[0].items[x])
+                                };
+                                drive.files.create({
+                                    resource: fileMetadata1,
+                                    media: media1,
+                                    fields: 'id'
+                                }, function (err, file1) {
+                                    if (err) {
+                                        // Handle error
+                                        console.error(err);
+                                    } else {}
+                                });
+                            }
+                        })
+                    }
+                    pageToken = res.nextPageToken;
+                    callback();
+                }
+            });
+        }, function () {
+            return !!pageToken;
+        }, function (err) {
             if (err) {
                 // Handle error
                 console.error(err);
             } else {
-                console.log("Projekt")
-                console.log('Folder Id: ', file.data.id);
-                ids.push({
-                    item_id: Projects[0].items[x]._id,
-                    folder_id: file.data.id
-                })
-                var fileMetadata1 = {
-                        'name': (Projects[0].items[x].title + ".json"),
-                        parents: [file.data.id]
-                    };
-                    var media1 = {
-                        mimeType: 'application/json',
-                        body: JSON.stringify(Projects[0].items[x])
-                    };
-                    drive.files.create({
-                        resource: fileMetadata1,
-                        media: media1,
-                        fields: 'id'
-                    }, function (err, file1) {
-                        if (err) {
-                            // Handle error
-                            console.error(err);
-                        } else {
-                            console.log('File Id: ', file1.id);
-                        }
-                    });
-            }
-            if ((x + 1) == Projects[0].items.length) {
-
-                /*function waitingItems (auth, token){
-                    console.log("-")
-                    console.log(ids.length)
-                    console.log(Projects[0].items.length)
-                    if (ids.length == Projects[0].items.length){
-                        synchronizeItems(auth,token)
-                    }
-                    else{
-                        setTimeout(waitingItems(auth, token), 500)
-                    }
-                }
-                waitingItems(auth, token)*/
-
-                setTimeout(() => synchronizeItems(auth, token), 1000)
-                //synchronizeItems(auth, token)
+                // All pages fetched
             }
         })
+        if ((x + 1) == Projects[0].items.length) {
+            setTimeout(() => synchronizeItems(auth, token), 3000)
+            //synchronizeItems(auth, token)
+        }
     }
 }
 
@@ -167,67 +192,111 @@ function synchronizeItems(auth, token) {
         auth
     });
     let itemId = null;
-    //let itemIdOriginal = [];
     for (let x = 0; x < Items.length; x++) {
         for (let y = 0; y < Items[x].items.length; y++) {
-            if (Items[x].items[y].parentItem) {
-                if (ids.length > 0) {
-                    for (let z = 0; z < ids.length; z++) {
-                        itemId = token.folder_id
-                        if (ids[z].item_id.toString() == Items[x].items[y].parentItem.toString()) {
-                            itemId = ids[z].folder_id
-                            break
-                        }
-                    }
-                }
-            } else {
-                itemId = token.folder_id
-            }
+            /* NEW*/
 
-            var fileMetadata = {
-                'name': Items[x].items[y].title,
-                'mimeType': 'application/vnd.google-apps.folder',
-                parents: [itemId]
-            };
-            drive.files.create({
-                resource: fileMetadata,
-                fields: 'id'
-            }, function (err, file) {
+            var pageToken = null;
+            // Using the NPM module 'async'
+            async.doWhilst(function (callback) {
+                drive.files.list({
+                    q: "mimeType = 'application/vnd.google-apps.folder'",
+                    q: ("name='" + Items[x].items[y].title + "'"),
+                    fields: 'nextPageToken, files(id, name)',
+                    spaces: 'drive',
+                    pageToken: pageToken
+                }, function (err, res) {
+                    if (err) {
+                        // Handle error
+                        console.error(err);
+                        callback(err)
+                    } else {
+                        if (res.data.files[1]) {
+                            console.log("ERROR: There are 2 folders with the same name")
+                        } else if (res.data.files[0]) {
+                            res.data.files.forEach(function (originalItem) {
+                                console.log(originalItem)
+                                console.log('Found file: ', originalItem.name, originalItem.id);
+                                ids.push({
+                                    item_id: Items[x].items[y]._id,
+                                    folder_id: originalItem.id
+                                })
+                            });
+                        } else {
+                            if (Items[x].items[y].parentItem) {
+                                if (ids.length > 0) {
+                                    for (let z = 0; z < ids.length; z++) {
+                                        itemId = token.folder_id
+                                        if (ids[z].item_id.toString() == Items[x].items[y].parentItem.toString()) {
+                                            itemId = ids[z].folder_id
+                                            break
+                                        }
+                                    }
+                                }
+                            } else {
+                                itemId = token.folder_id
+                            }
+
+                            var fileMetadata = {
+                                'name': Items[x].items[y].title,
+                                'mimeType': 'application/vnd.google-apps.folder',
+                                parents: [itemId]
+                            };
+                            drive.files.create({
+                                resource: fileMetadata,
+                                fields: 'id'
+                            }, function (err, file) {
+                                if (err) {
+                                    // Handle error
+                                    console.error(err);
+                                } else {
+                                    console.log("Item")
+                                    console.log('Folder Id: ', file.data.id);
+                                    ids.push({
+                                        item_id: Items[x].items[y]._id,
+                                        folder_id: file.data.id
+                                    })
+                                    var fileMetadata1 = {
+                                        'name': (Items[x].items[y].title + ".json"),
+                                        parents: [file.data.id]
+                                    };
+                                    var media1 = {
+                                        mimeType: 'application/json',
+                                        body: JSON.stringify(Items[x].items[y])
+                                    };
+                                    drive.files.create({
+                                        resource: fileMetadata1,
+                                        media: media1,
+                                        fields: 'id'
+                                    }, function (err, file1) {
+                                        if (err) {
+                                            // Handle error
+                                            console.error(err);
+                                        } else {}
+                                    });
+                                }
+
+                            })
+
+
+                        }
+                        pageToken = res.nextPageToken;
+                        callback();
+                    }
+                });
+            }, function () {
+                return !!pageToken;
+            }, function (err) {
                 if (err) {
                     // Handle error
                     console.error(err);
                 } else {
-                    console.log("Item")
-                    console.log('Folder Id: ', file.data.id);
-                    ids.push({
-                        item_id: Items[x].items[y]._id,
-                        folder_id: file.data.id
-                    })
-                    var fileMetadata1 = {
-                        'name': (Items[x].items[y].title + ".json"),
-                        parents: [file.data.id]
-                    };
-                    var media1 = {
-                        mimeType: 'application/json',
-                        body: JSON.stringify(Items[x].items[y])
-                    };
-                    drive.files.create({
-                        resource: fileMetadata1,
-                        media: media1,
-                        fields: 'id'
-                    }, function (err, file1) {
-                        if (err) {
-                            // Handle error
-                            console.error(err);
-                        } else {
-                            console.log('File Id: ', file1.id);
-                        }
-                    });
-                }
-                if ((x + 1) == Items.length && (y + 1) == Items[x].items.length) {
-                    setTimeout(() => synchronizeObjects(auth, token), 1000)
+                    // All pages fetched
                 }
             })
+            if ((x + 1) == Items.length && (y + 1) == Items[x].items.length) {
+                setTimeout(() => synchronizeObjects(auth, token), 10000)
+            }
         }
     }
 }
@@ -238,64 +307,108 @@ function synchronizeObjects(auth, token) {
         auth
     });
     let itemId = null;
-    //let itemIdOriginal = [];
     for (let x = 0; x < Objects.length; x++) {
         for (let y = 0; y < Objects[x].items.length; y++) {
-            if (Objects[x].items[y].parentItem) {
-                if (ids.length > 0) {
-                    for (let z = 0; z < ids.length; z++) {
-                        itemId = token.folder_id
-                        if (ids[z].item_id.toString() == Objects[x].items[y].parentItem.toString()) {
-                            itemId = ids[z].folder_id
-                            break
-                        }
-                    }
-                }
-            } else {
-                itemId = token.folder_id
-            }
 
-            var fileMetadata = {
-                'name': Objects[x].items[y].title,
-                'mimeType': 'application/vnd.google-apps.folder',
-                parents: [itemId]
-            };
-            drive.files.create({
-                resource: fileMetadata,
-                fields: 'id'
-            }, function (err, file) {
+            /* NEW*/
+
+            var pageToken = null;
+            // Using the NPM module 'async'
+            async.doWhilst(function (callback) {
+                drive.files.list({
+                    q: "mimeType = 'application/vnd.google-apps.folder'",
+                    q: ("name='" + Objects[x].items[y].title + "'"),
+                    fields: 'nextPageToken, files(id, name)',
+                    spaces: 'drive',
+                    pageToken: pageToken
+                }, function (err, res) {
+                    if (err) {
+                        // Handle error
+                        console.error(err);
+                        callback(err)
+                    } else {
+                        if (res.data.files[1]) {
+                            console.log("ERROR: There are 2 folders with the same name")
+                        } else if (res.data.files[0]) {
+                            /*res.data.files.forEach(function (originalObject) {
+                                console.log(originalObject)
+                                console.log('Found file: ', originalObject.name, originalObject.id);
+                                ids.push({
+                                    item_id: Objects[x].items[y]._id,
+                                    folder_id: originalObject.id
+                                })
+                            });*/
+                        } else {
+                            if (Objects[x].items[y].parentItem) {
+                                if (ids.length > 0) {
+                                    for (let z = 0; z < ids.length; z++) {
+                                        itemId = token.folder_id
+                                        if (ids[z].item_id.toString() == Objects[x].items[y].parentItem.toString()) {
+                                            console.log("tiskam")
+                                            console.log(ids[z].folder_id)
+                                            itemId = ids[z].folder_id
+                                            break
+                                        }
+                                    }
+                                }
+                            } else {
+                                itemId = token.folder_id
+                            }
+
+                            var fileMetadata = {
+                                'name': Objects[x].items[y].title,
+                                'mimeType': 'application/vnd.google-apps.folder',
+                                parents: [itemId]
+                            };
+                            drive.files.create({
+                                resource: fileMetadata,
+                                fields: 'id'
+                            }, function (err, file) {
+                                if (err) {
+                                    // Handle error
+                                    console.error(err);
+                                } else {
+                                    console.log("Object")
+                                    console.log('Folder Id: ', file.data.id);
+                                    ids.push({
+                                        item_id: Objects[x].items[y]._id,
+                                        folder_id: file.data.id
+                                    })
+                                    var fileMetadata1 = {
+                                        'name': (Objects[x].items[y].title + ".json"),
+                                        parents: [file.data.id]
+                                    };
+                                    var media1 = {
+                                        mimeType: 'application/json',
+                                        body: JSON.stringify(Objects[x].items[y])
+                                    };
+                                    drive.files.create({
+                                        resource: fileMetadata1,
+                                        media: media1,
+                                        fields: 'id'
+                                    }, function (err, file1) {
+                                        if (err) {
+                                            // Handle error
+                                            console.error(err);
+                                        } else {}
+                                    });
+                                }
+                                //consolelog()
+                            })
+                        }
+                        pageToken = res.nextPageToken;
+                        callback();
+                    }
+                });
+            }, function () {
+                return !!pageToken;
+            }, function (err) {
                 if (err) {
                     // Handle error
                     console.error(err);
                 } else {
-                    console.log("Object")
-                    console.log('Folder Id: ', file.data.id);
-                    ids.push({
-                        item_id: Objects[x].items[y]._id,
-                        folder_id: file.data.id
-                    })
-                    var fileMetadata1 = {
-                        'name': (Objects[x].items[y].title + ".json"),
-                        parents: [file.data.id]
-                    };
-                    var media1 = {
-                        mimeType: 'application/json',
-                        body: JSON.stringify(Objects[x].items[y])
-                    };
-                    drive.files.create({
-                        resource: fileMetadata1,
-                        media: media1,
-                        fields: 'id'
-                    }, function (err, file1) {
-                        if (err) {
-                            // Handle error
-                            console.error(err);
-                        } else {
-                            console.log('File Id: ', file1.id);
-                        }
-                    });
+                    // All pages fetched
                 }
-                //consolelog()
             })
         }
     }
