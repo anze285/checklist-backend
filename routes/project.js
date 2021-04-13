@@ -27,6 +27,10 @@ router.get("/invite/:inviteLink", passport.authenticate("jwt", {
     session: false
 }), ProjectController.inviteLink)
 
+router.post("/invite", passport.authenticate("jwt", {
+    session: false
+}), ProjectController.multipleInvite)
+
 router.delete("/:id", passport.authenticate("jwt", {
     session: false
 }),  ProjectController.delete)
