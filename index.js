@@ -43,11 +43,11 @@ app.use("/api/project", project)
 app.use("/api/item", item)
 app.use("/api/status", status)
 
-//OAUTH2CALLBACK
+//Google Drive API
 
 app.use("/oauth2callback", require('./oauth2callback'))
 app.use("/ds", require("./routes/drivesinhronization"))
-//app.use("/google", require("./google"))
+app.use("/as", require("./routes/appsinhronization"))
 
 //LISTENING//
 
