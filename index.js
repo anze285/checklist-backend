@@ -6,6 +6,8 @@ const cors = require('cors');
 const passport = require('passport')
 const passportMiddleware = require('./middleware/passport')
 
+let cron = require('node-cron');
+
 const config = require('./config/config');
 
 mongoose.connect(config.db, {
@@ -25,11 +27,9 @@ app.use(express.urlencoded({
 }));
 app.use(express.json());
 
-app.use(function (err, req, res, next) {
-    if (err.name === 'UnauthorizedError') {
-        res.send(401, 'invalid token...');
-    }
-});
+cron.schedule('* * * * *', () => {
+    console.log('Running task every minute')
+})
 
 //ROUTES//
 
