@@ -40,6 +40,7 @@ router.post(
 )
 
 router.get("/verify/:confirmationCode", AuthenticationController.verifyUser )
+router.post("/verify", AuthenticationController.sendVerification)
 
 router.get("/me", passport.authenticate("jwt", {
     session: false
