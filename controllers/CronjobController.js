@@ -5,61 +5,118 @@ let cron = require('node-cron');
 
 const Item = require('../models/Item')
 const User = require('../models/User')
+const config = require('../config/config')
+const nodemailer = require('nodemailer')
 
 
 module.exports = {
     weeklyReport() {
         cron.schedule('* 30 7 * * 1', () => {
-            console.log('Running every Monday 7.30')
+            weeklyReports()
         })
-        cron.schedule('* * * * *', () => {
-            console.log("hey")
-        })
-        //nekineki()
+        cron.schedule('* * * * *', () => {})
     }
 }
 
-async function nekineki() {
+async function weeklyReports() {
+    newDate = new Date()
+    oldDate = newDate.getDate() - 7
+    newDate.setDate(oldDate)
     const users = await User.find()
-    projectsLength = 0;
-    itemsLength = 0;
-    objectsLength = 0;
     users.forEach(async function (user) {
-        const items = await Item.find({
-            owner: user._id,
-            parentItem: null
-        }).populate('parentItem')
-
-        console.log(items)
-        /*async function readFromDatabase() {
+        if (user.active) {
+            projectsLength = 0;
+            itemsLength = 0;
+            objectsLength = 0;
             const projects = await Item.find({
                 owner: user._id,
-                parentItem: null
+                project: true
+            }).populate({
+                path: 'children',
+                populate: {
+                    path: 'children'
+                }
             })
-            projectsLength += projects.length
-            await projects.forEach(async function (project) {
-                console.log(project._id)
-                const items = await Item.find({
-                    owner: user._id,
-                    parentItem: project._id
-                })
-                console.log("Item " + items.length)
-                itemsLength += items.length
-                items.forEach(async function (item) {
-                    console.log(user.username + " " + item._id)
-                    const objects = await Item.find({
-                        owner: user._id,
-                        parentItem: item._id
+            projects.forEach(async function (project) {
+                if (project.dateModify > newDate) {
+                    projectsLength++
+                }
+                project.children.forEach(async function (item) {
+                    if (item.dateModify > newDate) {
+                        itemsLength++
+                    }
+                    item.children.forEach(async function (object) {
+                        if (object.dateModify > newDate) {
+                            objectsLength++
+                        }
                     })
-                    objectsLength += objects.length
+
                 })
             })
-        }*/
-        /*await readFromDatabase()
-        await console.log(user.username)
-        //console.log(projectsLength)
-        await console.log(itemsLength)
-        //console.log(objectsLength)*/
+            console.log(user.username)
+            console.log(projectsLength + " " + itemsLength + " " + objectsLength)
+            let message;
+            if ((projectsLength + objectsLength + itemsLength) > 10) {
+                messasge = "Ta teden ste bili zelo delavni, saj ste ustvarili ali posodobili, kar " + (projectsLength + objectsLength + itemsLength) + " opravil!💯"
+            } else if ((projectsLength + objectsLength + itemsLength) == 0) {
+                message = "Ta teden sploh niste bili dejavni, saj ste ustvarili ali posodobili " + (projectsLength + objectsLength + itemsLength) + " opravil! Vedi, da kdor ne dela naj ne je.💩💩💩"
+            } else if ((projectsLength + objectsLength + itemsLength) == 1) {
+                message = "Ta teden ste bili zelo slabo dejavni, saj ste ustvarili ali posodobili samo " + (projectsLength + objectsLength + itemsLength) + " opravilo! Res je, da pravijo, da se počasi daleč pride, ampak tega se ne sme vzeti dobesedno.😶"
+            } else if ((projectsLength + objectsLength + itemsLength) == 2) {
+                message = "Ta teden ste bili zelo ne dejavni, saj ste ustvarili ali posodobili samo " + (projectsLength + objectsLength + itemsLength) + " opravili!😭"
+            } else if ((projectsLength + objectsLength + itemsLength) > 2 && (projectsLength + objectsLength + itemsLength) < 5) {
+                message = "Ta teden ste bili zelo ne dejavni, saj ste ustvarili ali posodobili samo " + (projectsLength + objectsLength + itemsLength) + " opravila!😢"
+            } else {
+                message = "Ta teden ste bili delno dejavni, saj ste ustvarili ali posodobili " + (projectsLength + objectsLength + itemsLength) + " opravil!👍"
+            }
+            const transport = nodemailer.createTransport({
+                host: "smtp.gmail.com",
+                port: 587,
+                secure: false,
+                auth: {
+                    user: config.nodemailer_user,
+                    pass: config.nodemailer_pass,
+                },
+            });
+
+            transport.sendMail({
+                from: `"Checky ⚡️" <${config.nodemailer_user}>`,
+                to: user.email,
+                subject: "Tedensko poročilo aktivnosti",
+                html: `
+                    <div>
+                    <h2>Tedensko poročilo aktivnosti</h2>
+                    <p>${message}</p>
+                    <h3>Natančno poročilo</h3>
+                    <p>Število projektov, ki ste jih posodobili ali ustvarili ta teden: ${projectsLength}
+                    <br> Število seznamov, ki ste jih posodobili ali ustvarili ta teden: ${itemsLength}
+                    <br> Število opravil, ki ste jih posodobili ali ustvarili ta teden: ${objectsLength}</p>
+                    </div>`,
+
+            })
+        }
+        else {
+            const transport = nodemailer.createTransport({
+                host: "smtp.gmail.com",
+                port: 587,
+                secure: false,
+                auth: {
+                    user: config.nodemailer_user,
+                    pass: config.nodemailer_pass,
+                },
+            });
+
+            transport.sendMail({
+                from: `"Checky ⚡️" <${config.nodemailer_user}>`,
+                to: user.email,
+                subject: "Aktivacija računa",
+                html: `
+                    <div>
+                    <h2>Niste še aktivirali računa!</h2>
+                    <p>Niste prejeli aktivacijske e-pošte? Ponovno aktivacijsko sporočilo lahko dobite s prijavo v aplikacijo.</p>
+                    </div>`,
+            })
+        }
 
     })
 }

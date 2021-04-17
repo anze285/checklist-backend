@@ -198,6 +198,7 @@ module.exports = {
                     to: emails,
                     subject: "Bili ste povabljeni v projekt!",
                     html: `
+                    <div>
                     <h2>${req.user.name} vam je poslal povabilo za pridružitev k projektu ${project.title}!</h2>
                     <p>Pridruži se s klikom na sledeči link: <a href=https://checky-app.herokuapp.com/projects/invite/${token.token}>Klikni tukaj</a></p>
                     </div>`,

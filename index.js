@@ -27,10 +27,6 @@ app.use(express.urlencoded({
 }));
 app.use(express.json());
 
-cron.schedule('* 30 7 * * 1', () => {
-    console.log('Running every Monday 7.30')
-})
-
 //ROUTES//
 
 const user = require('./routes/user')
