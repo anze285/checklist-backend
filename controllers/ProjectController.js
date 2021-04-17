@@ -35,7 +35,7 @@ module.exports = {
     async single(req, res) {
         try {
             const itemId = req.params.id
-            const item = await Item.findById(itemId)
+            const item = await Item.findById(itemId).populate({path: 'children', populate: {path: 'children'}})
             const token = await Token.findOne({
                 project: item._id
             })
