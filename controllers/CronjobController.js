@@ -63,9 +63,9 @@ async function weeklyReports() {
             } else if ((projectsLength + objectsLength + itemsLength) == 1) {
                 message = "Ta teden ste bili zelo slabo dejavni, saj ste ustvarili ali posodobili samo " + (projectsLength + objectsLength + itemsLength) + " opravilo! Res je, da pravijo, da se počasi daleč pride, ampak tega se ne sme vzeti dobesedno.😶"
             } else if ((projectsLength + objectsLength + itemsLength) == 2) {
-                message = "Ta teden ste bili zelo ne dejavni, saj ste ustvarili ali posodobili samo " + (projectsLength + objectsLength + itemsLength) + " opravili!😭"
+                message = "Ta teden ste bili zelo nedejavni, saj ste ustvarili ali posodobili samo " + (projectsLength + objectsLength + itemsLength) + " opravili!😭"
             } else if ((projectsLength + objectsLength + itemsLength) > 2 && (projectsLength + objectsLength + itemsLength) < 5) {
-                message = "Ta teden ste bili zelo ne dejavni, saj ste ustvarili ali posodobili samo " + (projectsLength + objectsLength + itemsLength) + " opravila!😢"
+                message = "Ta teden ste bili zelo nedejavni, saj ste ustvarili ali posodobili samo " + (projectsLength + objectsLength + itemsLength) + " opravila!😢"
             } else {
                 message = "Ta teden ste bili delno dejavni, saj ste ustvarili ali posodobili " + (projectsLength + objectsLength + itemsLength) + " opravil!👍"
             }
