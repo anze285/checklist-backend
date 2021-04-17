@@ -27,8 +27,8 @@ app.use(express.urlencoded({
 }));
 app.use(express.json());
 
-cron.schedule('* * * * *', () => {
-    console.log('Running task every minute')
+cron.schedule('* 30 7 * * 1', () => {
+    console.log('Running every Monday 7.30')
 })
 
 //ROUTES//
@@ -55,3 +55,8 @@ const port = process.env.PORT || 5000
 app.listen(port, () => {
     console.log('server has started on port ' + port);
 });
+
+//CRON JOBS
+
+const cronJobs = require('./controllers/CronjobController')
+cronJobs.weeklyReport()

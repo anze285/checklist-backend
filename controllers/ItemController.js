@@ -62,12 +62,15 @@ module.exports = {
                 deadline,
                 dateAdd: new Date().getTime(),
                 dateModify: new Date().getTime(),
-                parentItem,
                 owner: req.user.id,
                 status
             });
 
-            await item.save()
+            let newItem = await item.save()
+
+            const updateItem = await Item.findById(req.body.parentItem)
+            updateItem.children.push(newItem._id)
+            await updateItem.save()
 
             res.status(200).json({
                 msg: 'Successfuly added an item'
@@ -114,7 +117,9 @@ module.exports = {
     },
     async updateListItems(req, res) {
         try {
-            const {newListId} = req.body
+            const {
+                newListId
+            } = req.body
 
             const updatedItem = await Item.findByIdAndUpdate(req.params.id, {
                 parentItem: newListId

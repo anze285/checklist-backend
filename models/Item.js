@@ -25,11 +25,16 @@ const ItemSchema = new Schema({
     dateModify: {
         type: Date,
         required: true
-    },    
-    parentItem: {
+    },
+    project: {
+        type: Boolean,
+        required: true,
+        default: false
+    },
+    children: [{
         type: mongoose.Types.ObjectId,
         ref: 'Item'
-    },
+    }],
     owner: {
         type: mongoose.Types.ObjectId,
         ref: 'User',
@@ -40,12 +45,10 @@ const ItemSchema = new Schema({
         ref: 'Status',
         required: false
     },
-    users: [
-        {
-            type: mongoose.Types.ObjectId,
-            ref: 'User'
-        }
-    ]
+    users: [{
+        type: mongoose.Types.ObjectId,
+        ref: 'User'
+    }]
 })
 
 const Item = mongoose.model('Item', ItemSchema)

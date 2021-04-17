@@ -12,13 +12,13 @@ module.exports = {
         try {
             let userCreated = await Item.find({
                 owner: req.user.id,
-                parentItem: null
+                project: true
             });
             if (!userCreated) {
                 userCreated = null
             }
             const userInvited = await Item.find({
-                parentItem: null,
+                project: true,
                 users: req.user.id
             })
             res.json({
@@ -64,6 +64,7 @@ module.exports = {
                 description,
                 tags,
                 deadline,
+                project: true,
                 dateAdd: new Date().getTime(),
                 dateModify: new Date().getTime(),
                 owner: req.user.id,
@@ -97,8 +98,6 @@ module.exports = {
                 description,
                 tags,
                 deadline,
-                parentItem,
-                owner,
                 status,
             } = req.body;
 
@@ -148,7 +147,7 @@ module.exports = {
                         project.users.push(req.user.id)
                         project.save()
                         res.status(200).json({
-                            message: "Successfuly added the user to the project"
+                            message: "Projektu ste uspešno dodali člana"
                         })
                     } else {
                         res.status(400).json({
