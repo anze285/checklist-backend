@@ -16,8 +16,8 @@ module.exports = {
         })
     },
     databaseCleaning() {
-        cron.schedule('* * * * *', () => {
-            //deleteUnactivatedUsers()
+        cron.schedule('0 0 * * *', () => {
+            deleteUnactivatedUsers()
         })
     }
 }
@@ -29,8 +29,9 @@ async function deleteUnactivatedUsers() {
         newDate = new Date()
         oldDate = newDate.getDate() - 14
         newDate.setDate(oldDate)
-        if (user.dateModify < newDate){
-            
+        if (user.dateAdd < newDate){
+            const deletedUser = await Item.findByIdAndDelete(user._id)
+            console.log(user.email + " was deleted.")
         }
     })
 }
