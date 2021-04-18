@@ -36,7 +36,7 @@ router.get("/", async (req, res) => {
     // Load client secrets from a local file.
     const items = await Item.find({
         owner: "60753a34c79eb20004b1e6f7",
-        parentItem: null
+        project: true
     });
     //Items += items;
     Projects.push({
@@ -83,14 +83,105 @@ function authorize(credentials, res) {
             message: "Error retrieving token"
         });
         oAuth2Client.setCredentials(JSON.parse(token));
-        synchronize(oAuth2Client, JSON.parse(token));
+        //synchronizeOld(oAuth2Client, JSON.parse(token));
+        synchronize(oAuth2Client, JSON.parse(token), "60753a34c79eb20004b1e6f7");
         //res.redirect(oAuth2Client.generateAuthUrl({ access_type: 'offline', scope: SCOPES, }));
         res.sendStatus(200)
     });
 }
 
+async function synchronize(auth, token, user_id) {
+    const drive = google.drive({
+        version: 'v3',
+        auth
+    });
+    const projects = await Item.find({
+        owner: user_id,
+        project: true
+    }).populate({
+        path: 'children',
+        populate: {
+            path: 'children'
+        }
+    })
+    projects.forEach(async function (project) {
+        var pageToken = null;
+        // Using the NPM module 'async'
+        async.doWhilst(function (callback) {
+            drive.files.list({
+                q: "mimeType = 'application/vnd.google-apps.folder'",
+                q: ("name='" + project.title + "'"),
+                fields: 'nextPageToken, files(id, name)',
+                spaces: 'drive',
+                pageToken: pageToken
+            }, function (err, resProject) {
+                if (err) {
+                    // Handle error
+                    console.error(err);
+                    callback(err)
+                } else {
+                    let projectFolderId;
+                    if (resProject.data.files[1]) {
+                        console.log("ERROR: There are 2 folders with the same name")
+                    } else if (resProject.data.files[0]) {
+                        projectFolderId = resProject.data.files[0]
+                    } else {
+                        var projectFolderMetadata = {
+                            'name': project.title,
+                            'mimeType': 'application/vnd.google-apps.folder',
+                            parents: [token.folder_id]
+                        };
+                        drive.files.create({
+                            resource: projectFolderMetadata,
+                            fields: 'id'
+                        }, function (err, projectFolder) {
+                            if (err) {
+                                // Handle error
+                                console.error(err);
+                            } else {
+                                //console.log("Project")
+                                //console.log('Folder Id: ', file.data.id);
+                                projectFolderId = projectFolder.data.id
+                                var projectFileMetadata = {
+                                    'name': (project.title + ".json"),
+                                    parents: [projectFolderId]
+                                };
+                                var projectFileMedia = {
+                                    mimeType: 'application/json',
+                                    body: JSON.stringify(project)
+                                };
+                                drive.files.create({
+                                    resource: projectFileMetadata,
+                                    media: projectFileMedia,
+                                    fields: 'id'
+                                }, function (err, projectFile) {
+                                    if (err) {
+                                        // Handle error
+                                        console.error(err);
+                                    } else {}
+                                });
+                            }
+                        })
+                    }
+                    pageToken = resProject.nextPageToken;
+                    callback();
+                }
+            });
+        }, function () {
+            return !!pageToken;
+        }, function (err) {
+            if (err) {
+                // Handle error
+                console.error(err);
+            } else {
+                // All pages fetched
+            }
+        })
+    })
+}
 
-function synchronize(auth, token) {
+
+function synchronizeOld(auth, token) {
     const drive = google.drive({
         version: 'v3',
         auth
