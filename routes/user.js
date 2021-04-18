@@ -41,8 +41,11 @@ router.post(
 
 router.get("/verify/:confirmationCode", AuthenticationController.verifyUser )
 
-router.get("/me", passport.authenticate("jwt", {
+router.get("/admin/all", passport.authenticate("jwt", {
     session: false
-}), AuthenticationController.getUser);
+}), AuthenticationController.getUsers);
+router.delete("/:id", passport.authenticate("jwt", {
+    session: false
+}), AuthenticationController.deleteUser)
 
 module.exports = router;

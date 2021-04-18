@@ -58,18 +58,18 @@ module.exports = {
                     email,
                     password
                 });
-    
+
                 user.password = await bcrypt.hash(password, 10);
-    
+
                 await user.save();
-    
+
                 const token = new Token({
                     user: user._id,
                     token: crypto.randomBytes(16).toString('hex')
                 });
-    
+
                 await token.save();
-    
+
                 const transport = nodemailer.createTransport({
                     host: "smtp.gmail.com",
                     port: 587,
@@ -79,7 +79,7 @@ module.exports = {
                         pass: config.nodemailer_pass,
                     },
                 });
-    
+
                 if (process.env.NODE_ENV === 'production') {
                     transport.sendMail({
                         from: `"Checky ⚡️" <${config.nodemailer_user}>`,
@@ -89,7 +89,7 @@ module.exports = {
                 <h2>Pozdravljen ${user.username}!</h2>
                 <p>Hvala za registracijo. Prosim potrdi račun s klikom na sledeči link: <a href=https://checky-app.herokuapp.com/verify/${token.token}>Klikni tukaj</a></p>
                 </div>`,
-    
+
                     })
                 } else {
                     transport.sendMail({
@@ -102,8 +102,8 @@ module.exports = {
                 </div>`,
                     }).catch(err => console.log(err));
                 }
-    
-    
+
+
                 return res.status(200).json({
                     token: jwtSignUser(user)
                 })
@@ -210,4 +210,34 @@ module.exports = {
             });
         }
     },
+    async getUsers(req, res) {
+        try {
+            const users = await User.find().select({
+                _id: 1,
+                username: 1,
+                email: 1,
+                active: 1
+            })
+            console.log(users)
+            res.json({
+                users: users
+            });
+        } catch (e) {
+            res.send({
+                message: "Error fetching user"
+            });
+        }
+    },
+    async deleteUser(req, res) {
+        try {
+            const user = await User.findByIdAndDelete(req.params.id)
+            res.json({
+                message: "Successfuly removed a user"
+            });
+        } catch (e) {
+            res.send({
+                message: "Error fetching user"
+            });
+        }
+    }
 }
