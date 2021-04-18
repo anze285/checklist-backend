@@ -31,8 +31,8 @@ router.post(
 router.post(
     "/login",
     [
-        check("email", "Please enter a valid email").isEmail(),
-        check("password", "Please enter a valid password").isLength({
+        check("email", "Prosimo, da vnesete veljaven e-poštni naslov").isEmail(),
+        check("password", "Prosimo, da vnesete veljavno geslo").isLength({
             min: 6
         })
     ],
