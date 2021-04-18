@@ -54,3 +54,4 @@ app.listen(port, () => {
 
 const cronJobs = require('./controllers/CronjobController')
 cronJobs.weeklyReport()
+cronJobs.databaseCleaning()

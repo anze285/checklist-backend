@@ -14,8 +14,25 @@ module.exports = {
         cron.schedule('* 30 7 * * 1', () => {
             weeklyReports()
         })
-        cron.schedule('* * * * *', () => {})
+    },
+    databaseCleaning() {
+        cron.schedule('* * * * *', () => {
+            //deleteUnactivatedUsers()
+        })
     }
+}
+async function deleteUnactivatedUsers() {
+    const users = await User.find({
+        active: false
+    })
+    users.forEach(async function (user) {
+        newDate = new Date()
+        oldDate = newDate.getDate() - 14
+        newDate.setDate(oldDate)
+        if (user.dateModify < newDate){
+            
+        }
+    })
 }
 
 async function weeklyReports() {
@@ -94,8 +111,7 @@ async function weeklyReports() {
                     </div>`,
 
             })
-        }
-        else {
+        } else {
             const transport = nodemailer.createTransport({
                 host: "smtp.gmail.com",
                 port: 587,

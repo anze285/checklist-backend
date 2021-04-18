@@ -56,7 +56,8 @@ module.exports = {
                     surname,
                     username,
                     email,
-                    password
+                    password,
+                    dateAdd: new Date().getTime()
                 });
 
                 user.password = await bcrypt.hash(password, 10);
