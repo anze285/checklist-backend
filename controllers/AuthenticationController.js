@@ -118,13 +118,8 @@ module.exports = {
     },
 
     async login(req, res) {
-        const errors = validationResult(req);
 
-        if (!errors.isEmpty()) {
-            return res.status(400).json({
-                errors: errors.array()
-            });
-        }
+        console.log(req.body)
 
         const {
             email,
@@ -136,13 +131,13 @@ module.exports = {
             });
             if (!user)
                 return res.status(400).json({
-                    message: "User with that email doesn't exist."
+                    message: "Uporabnik s tem e-poštnim naslovom ne obstaja"
                 });
 
             const isMatch = await bcrypt.compare(password, user.password);
             if (!isMatch)
                 return res.status(400).json({
-                    message: "Incorrect Password."
+                    message: "Napačni e-poštni naslov ali geslo"
                 });
 
             return res.status(200).json({
@@ -259,7 +254,6 @@ module.exports = {
                 email: 1,
                 active: 1
             })
-            console.log(users)
             res.json({
                 users: users
             });
@@ -273,7 +267,7 @@ module.exports = {
         try {
             const user = await User.findByIdAndDelete(req.params.id)
             res.json({
-                message: "Successfuly removed a user"
+                message: "Uspešno ste izbrisali uporabnika"
             });
         } catch (e) {
             res.send({
