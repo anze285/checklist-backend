@@ -6,8 +6,6 @@ const cors = require('cors');
 const passport = require('passport')
 const passportMiddleware = require('./middleware/passport')
 
-let cron = require('node-cron');
-
 const config = require('./config/config');
 
 mongoose.connect(config.db, {

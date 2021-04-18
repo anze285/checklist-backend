@@ -173,7 +173,7 @@ module.exports = {
                     if (token) {
                         await Token.findByIdAndDelete(token._id)
                     }
-                    res.status(200).json({
+                    res.send({
                         message: "Successfuly activated user",
                     })
 
@@ -184,6 +184,47 @@ module.exports = {
                     message: 'Validation token is invalid'
                 })
             }
+        } catch (e) {
+            console.log(e)
+            res.status(500).json({
+                message: "Server error"
+            })
+        }
+    },
+
+    async sendVerification(req, res) {
+        try {
+            const email = req.body.email
+            const user = await User.findOne({
+                email: email
+            })
+            const token = await Token.findOne({
+                user: user._id,
+                project: null
+            })
+
+            const transport = nodemailer.createTransport({
+                host: "smtp.gmail.com",
+                port: 587,
+                secure: false,
+                auth: {
+                    user: config.nodemailer_user,
+                    pass: config.nodemailer_pass,
+                },
+            });
+            transport.sendMail({
+                from: `"Checky ⚡️" <${config.nodemailer_user}>`,
+                to: user.email,
+                subject: "Prosimo, da potrdite vaš račun.",
+                html: `<h1>Potrditev e-poštnega naslova</h1>
+                <h2>Pozdravljen ${user.username}!</h2>
+                <p>Hvala za registracijo. Prosim potrdi račun s klikom na sledeči link: <a href=https://checky-app.herokuapp.com/verify/${token.token}>Klikni tukaj</a></p>
+                </div>`,
+            })
+
+            res.status(200).json({
+                message: 'Email je bil uspešno poslan.'
+            })
         } catch (e) {
             console.log(e)
             res.status(500).json({
