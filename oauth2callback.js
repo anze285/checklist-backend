@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport")
 const cors = require('cors');
-const axios = require('axios');
 
 const async = require('async');
 
@@ -79,19 +78,7 @@ function getAccessToken(oAuth2Client, callback, code, res) {
       res.sendStatus(200);
     });
   } else {
-    axios.get(authUrl)
-      .then(function (response) {
-        // handle success
-        console.log(response);
-      })
-      .catch(function (error) {
-        // handle error
-        console.log(error);
-      })
-      .then(function () {
-        // always executed
-      });
-    //res.redirect(authUrl);
+    res.redirect(authUrl);
   }
 }
 /**
