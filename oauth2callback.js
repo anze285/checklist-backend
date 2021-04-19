@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const passport = require("passport")
+const cors = require('cors');
 
 const async = require('async');
 
@@ -20,6 +21,8 @@ const SCOPES = ['https://www.googleapis.com/auth/drive.file', 'https://www.googl
 // created automatically when the authorization flow completes for the first
 // time.
 const TOKEN_PATH = 'token.json';
+
+router.use(cors())
 
 router.get("/", passport.authenticate("jwt", {
     session: false
