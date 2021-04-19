@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport")
 const cors = require('cors');
+const axios = require('axios');
 
 const async = require('async');
 
@@ -25,7 +26,7 @@ const TOKEN_PATH = 'token.json';
 router.use(cors())
 
 router.get("/", passport.authenticate("jwt", {
-    session: false
+  session: false
 }), function (req, res) {
   // Load client secrets from a local file.
   fs.readFile('credentials.json', (err, content) => {
@@ -78,7 +79,19 @@ function getAccessToken(oAuth2Client, callback, code, res) {
       res.sendStatus(200);
     });
   } else {
-    res.redirect(authUrl);
+    axios.get(authUrl)
+      .then(function (response) {
+        // handle success
+        console.log(response);
+      })
+      .catch(function (error) {
+        // handle error
+        console.log(error);
+      })
+      .then(function () {
+        // always executed
+      });
+    //res.redirect(authUrl);
   }
 }
 /**
