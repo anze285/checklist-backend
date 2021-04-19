@@ -27,12 +27,14 @@ const User = require("../models/User");
 // time.
 const TOKEN_PATH = 'token.json';
 
-router.get("/", async (req, res) => {
+router.get("/", passport.authenticate("jwt", {
+    session: false
+}), async (req, res) => {
 
     fs.readFile('credentials.json', (err, content) => {
         if (err) return res.send('Error loading client secret file:', err);
         // Authorize a client with credentials, then call the Google Drive API.
-        authorize(JSON.parse(content), res, "607d69858e6e9133f73a005c");
+        authorize(JSON.parse(content), res, res.user.id);
     });
 })
 
@@ -245,7 +247,7 @@ function readItems(project, drive, projectId, userId) {
                                             console.log(project._id)
                                             parentProject = await Item.findById(project._id)
                                             console.log(parentProject)
-                                            
+
                                             parentProject.children.push(newItem._id) //OLD IDS ARE NOT DELETED
                                             await parentProject.save()
 
@@ -360,7 +362,7 @@ function readObjects(item, drive, itemId, userId) {
                                             await newObject.save()
                                             parentItem = await Item.findById(item._id)
                                             console.log(parentItem)
-                                            
+
                                             parentItem.children.push(newObject._id) //OLD IDS ARE NOT DELETED
                                             await parentItem.save()
                                         },

@@ -21,7 +21,9 @@ const SCOPES = ['https://www.googleapis.com/auth/drive.file', 'https://www.googl
 // time.
 const TOKEN_PATH = 'token.json';
 
-router.get("/", function (req, res) {
+router.get("/", passport.authenticate("jwt", {
+    session: false
+}), function (req, res) {
   // Load client secrets from a local file.
   fs.readFile('credentials.json', (err, content) => {
     if (err) return res.send('Error loading client secret file:', err);
@@ -47,6 +49,7 @@ function authorize(credentials, callback, code, res) {
   // Check if we have previously stored a token.
   fs.readFile(TOKEN_PATH, (err, token) => {
     if (err) return getAccessToken(oAuth2Client, callback, code, res);
+    console.log(JSON.parse(token))
     oAuth2Client.setCredentials(JSON.parse(token));
     findChecky(oAuth2Client, JSON.parse(token));
     //res.redirect(oAuth2Client.generateAuthUrl({ access_type: 'offline', scope: SCOPES, }));
@@ -64,7 +67,7 @@ function getAccessToken(oAuth2Client, callback, code, res) {
     oAuth2Client.getToken(code, (err, token) => {
       if (err) return console.error('Error retrieving access token', err);
       oAuth2Client.setCredentials(token);
-      token.user = 'gorisnek.com@gmail.com';
+      token.user = res.user.id;
       //Creating Google Drive Folder
 
       createFolder(oAuth2Client, token)
@@ -169,8 +172,9 @@ function createFolder(auth, token) {
     } else {
       console.log('Folder Id: ', file.data.id);
       token.folder_id = file.data.id;
-
-      fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
+      let parentToken;
+      parentToken.push(JSON.stringify(token))
+      fs.writeFile(TOKEN_PATH, parentToken, (err) => {
         if (err) return console.error(err);
         console.log('Token stored to', TOKEN_PATH);
       });

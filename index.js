@@ -41,9 +41,9 @@ app.use("/api/role", role)
 
 //Google Drive API
 
-app.use("/oauth2callback", require('./oauth2callback'))
-app.use("/ds", require("./routes/drivesinhronization"))
-app.use("/as", require("./routes/appsinhronization"))
+app.use("/api/oauth2callback", require('./oauth2callback'))
+app.use("/api/drive/sync", require("./routes/drivesinhronization"))
+app.use("/api/app/sync", require("./routes/appsinhronization"))
 
 //LISTENING//
 

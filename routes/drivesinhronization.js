@@ -28,7 +28,9 @@ let ids = [];
 // time.
 const TOKEN_PATH = 'token.json';
 
-router.get("/", async (req, res) => {
+router.get("/", passport.authenticate("jwt", {
+    session: false
+}), async (req, res) => {
 
     fs.readFile('credentials.json', (err, content) => {
         if (err) return res.send('Error loading client secret file:', err);
@@ -52,7 +54,7 @@ function authorize(credentials, res) {
         });
         oAuth2Client.setCredentials(JSON.parse(token));
         //synchronizeOld(oAuth2Client, JSON.parse(token));
-        synchronize(oAuth2Client, JSON.parse(token), "607d69858e6e9133f73a005c");
+        synchronize(oAuth2Client, JSON.parse(token), res.user.id);
         //res.redirect(oAuth2Client.generateAuthUrl({ access_type: 'offline', scope: SCOPES, }));
         res.sendStatus(200)
     });
