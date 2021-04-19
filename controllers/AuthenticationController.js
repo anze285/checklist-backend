@@ -1,5 +1,6 @@
 const User = require('../models/User')
 const Token = require('../models/Token')
+const Role = require('../models/Role')
 
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
@@ -18,7 +19,8 @@ function jwtSignUser(user) {
         email: user.email,
         name: user.name,
         surname: user.surname,
-        active: user.active
+        active: user.active,
+        roles: user.roles
     }, config.jwtSecret, {
         subject: `${user._id}`,
         expiresIn: 86400
@@ -46,6 +48,7 @@ module.exports = {
             let user = await User.findOne({
                 email
             });
+
             if (user) {
                 return res.status(400).json({
                     msg: "User Already Exists"
@@ -59,6 +62,12 @@ module.exports = {
                     password,
                     dateAdd: new Date().getTime()
                 });
+
+                const role = await Role.findOne({
+                    name: 'default'
+                })
+
+                user.roles.push(role._id)
 
                 user.password = await bcrypt.hash(password, 10);
 
@@ -120,8 +129,6 @@ module.exports = {
 
     async login(req, res) {
 
-        console.log(req.body)
-
         const {
             email,
             password
@@ -129,7 +136,8 @@ module.exports = {
         try {
             let user = await User.findOne({
                 email
-            });
+            }).populate({path: 'roles', model: 'Role'})
+            console.log(user)
             if (!user)
                 return res.status(400).json({
                     message: "Uporabnik s tem e-poštnim naslovom ne obstaja"
