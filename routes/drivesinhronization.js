@@ -29,38 +29,6 @@ let ids = [];
 const TOKEN_PATH = 'token.json';
 
 router.get("/", async (req, res) => {
-    Projects = [];
-    Items = [];
-    Objects = [];
-    ids = [];
-    // Load client secrets from a local file.
-    const items = await Item.find({
-        owner: "60753a34c79eb20004b1e6f7",
-        project: true
-    });
-    //Items += items;
-    Projects.push({
-        items: items
-    })
-    for (let x = 0; x < items.length; x++) {
-        const elements = await Item.find({
-            parentItem: items[x]._id
-        });
-        //Items += elements
-
-        Items.push({
-            items: elements
-        })
-        for (let y = 0; y < elements.length; y++) {
-            const objects = await Item.find({
-                parentItem: elements[y]._id
-            })
-            //Items += objects
-            Objects.push({
-                items: objects
-            })
-        }
-    }
 
     fs.readFile('credentials.json', (err, content) => {
         if (err) return res.send('Error loading client secret file:', err);
@@ -84,7 +52,7 @@ function authorize(credentials, res) {
         });
         oAuth2Client.setCredentials(JSON.parse(token));
         //synchronizeOld(oAuth2Client, JSON.parse(token));
-        synchronize(oAuth2Client, JSON.parse(token), "607c15ba9512cf0004d39d15");
+        synchronize(oAuth2Client, JSON.parse(token), "607d69858e6e9133f73a005c");
         //res.redirect(oAuth2Client.generateAuthUrl({ access_type: 'offline', scope: SCOPES, }));
         res.sendStatus(200)
     });
@@ -109,8 +77,7 @@ async function synchronize(auth, token, user_id) {
         // Using the NPM module 'async'
         async.doWhilst(function (projectCallback) {
             drive.files.list({
-                q: "mimeType = 'application/vnd.google-apps.folder'",
-                q: ("name='" + project.title + "'"),
+                q: "mimeType = 'application/vnd.google-apps.folder' and name='" + project.title + "'",
                 fields: 'nextPageToken, files(id, name)',
                 spaces: 'drive',
                 pageToken: projectPageToken
@@ -190,8 +157,7 @@ function synchronizeItems(project, drive, projectFolderId) {
         // Using the NPM module 'async'
         async.doWhilst(function (itemCallback) {
             drive.files.list({
-                q: "mimeType = 'application/vnd.google-apps.folder'",
-                q: ("name='" + item.title + "'"),
+                q: "mimeType = 'application/vnd.google-apps.folder' and name='" + item.title + "'",
                 fields: 'nextPageToken, files(id, name)',
                 spaces: 'drive',
                 pageToken: itemPageToken
@@ -275,8 +241,7 @@ function synchronizeObjects(item, drive, itemFolderId) {
         // Using the NPM module 'async'
         async.doWhilst(function (objectCallback) {
             drive.files.list({
-                q: "mimeType = 'application/vnd.google-apps.folder'",
-                q: ("name='" + object.title + "'"),
+                q: "mimeType = 'application/vnd.google-apps.folder' and name='" + object.title + "'",
                 fields: 'nextPageToken, files(id, name)',
                 spaces: 'drive',
                 pageToken: objectPageToken
