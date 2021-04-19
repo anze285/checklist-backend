@@ -29,7 +29,12 @@ const UserSchema = new Schema({
     dateAdd: {
         type: Date,
         required: true
-    }
+    },
+    roles: [
+        {
+            type: mongoose.Types.ObjectId,
+        }
+    ]
 })
 
 const User = mongoose.model('User', UserSchema)
