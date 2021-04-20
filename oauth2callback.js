@@ -48,7 +48,7 @@ function authorize(credentials, callback, code, res) {
     redirect_uris
   } = credentials.web;
   const oAuth2Client = new google.auth.OAuth2(
-    client_id, client_secret, redirect_uris[1]);
+    client_id, client_secret, redirect_uris[0]);
   // Check if we have previously stored a token.
   fs.readFile(TOKEN_PATH, (err, token) => {
     if (err) return getAccessToken(oAuth2Client, callback, code, res);
@@ -56,7 +56,7 @@ function authorize(credentials, callback, code, res) {
     oAuth2Client.setCredentials(JSON.parse(token));
     findChecky(oAuth2Client, JSON.parse(token));
     //res.redirect(oAuth2Client.generateAuthUrl({ access_type: 'offline', scope: SCOPES, }));
-    res.sendStatus(200)
+    //res.sendStatus(200)
   });
 }
 
@@ -80,6 +80,7 @@ function getAccessToken(oAuth2Client, callback, code, res) {
   } else {
     //res.redirect(authUrl);
     if (authUrl) {
+      console.log(authUrl)
       res.status(200).json({
         url: authUrl
       })
