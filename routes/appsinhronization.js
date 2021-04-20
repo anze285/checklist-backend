@@ -4,6 +4,7 @@ const router = express.Router();
 const passport = require("passport")
 
 const Item = require('../models/Item')
+const TokenJWT = require('../models/TokenJWT')
 
 const Token = require('../models/Token')
 const crypto = require('crypto');
@@ -31,14 +32,15 @@ router.get("/", passport.authenticate("jwt", {
     session: false
 }), async (req, res) => {
 
+
     fs.readFile('credentials.json', (err, content) => {
         if (err) return res.send('Error loading client secret file:', err);
         // Authorize a client with credentials, then call the Google Drive API.
-        authorize(JSON.parse(content), res, res.user.id);
+        authorize(JSON.parse(content), res, req.user.id);
     });
 })
 
-function authorize(credentials, res, userId) {
+async function authorize(credentials, res, userId) {
     const {
         client_secret,
         client_id,
@@ -46,16 +48,25 @@ function authorize(credentials, res, userId) {
     } = credentials.web;
     const oAuth2Client = new google.auth.OAuth2(
         client_id, client_secret, redirect_uris[0]);
-    // Check if we have previously stored a token.
-    fs.readFile(TOKEN_PATH, (err, token) => {
-        if (err) return res.send({
-            message: "Error retrieving token"
-        });
-        oAuth2Client.setCredentials(JSON.parse(token));
-        //call function
-        readProjects(oAuth2Client, JSON.parse(token), userId)
-        res.sendStatus(200)
-    });
+
+    const jwtToken = await TokenJWT.findOne({
+        user: userId
+    })
+
+    try {
+        if (jwtToken) {
+            oAuth2Client.setCredentials(jwtToken);
+            //synchronizeOld(oAuth2Client, JSON.parse(token));
+            readProjects(oAuth2Client, jwtToken, userId)
+            res.json({
+                message: 'Uspešen prenos podatkov iz Google Drive'
+            })
+        }
+    } catch (error) {
+        res.json({
+            error: error
+        })
+    }
 }
 
 function readProjects(auth, token, userId) {

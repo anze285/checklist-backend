@@ -14,6 +14,7 @@ const url = require("url");
 const {
   ContextHandlerImpl
 } = require("express-validator/src/chain");
+const TokenJWT = require('./models/TokenJWT')
 
 // If modifying these scopes, delete token.json.
 const SCOPES = ['https://www.googleapis.com/auth/drive.file', 'https://www.googleapis.com/auth/drive.readonly'];
@@ -31,7 +32,7 @@ router.post("/", passport.authenticate("jwt", {
   fs.readFile('credentials.json', (err, content) => {
     if (err) return res.send('Error loading client secret file:', err);
     // Authorize a client with credentials, then call the Google Drive API.
-    authorize(JSON.parse(content), listFiles, req.body.code, res);
+    authorize(JSON.parse(content), listFiles, req.body.code, res, req);
   });
 })
 
@@ -41,7 +42,7 @@ router.post("/", passport.authenticate("jwt", {
  * @param {Object} credentials The authorization client credentials.
  * @param {function} callback The callback to call with the authorized client.
  */
-function authorize(credentials, callback, code, res) {
+async function authorize(credentials, callback, code, res, req) {
   const {
     client_secret,
     client_id,
@@ -50,17 +51,19 @@ function authorize(credentials, callback, code, res) {
   const oAuth2Client = new google.auth.OAuth2(
     client_id, client_secret, redirect_uris[0]);
   // Check if we have previously stored a token.
-  fs.readFile(TOKEN_PATH, (err, token) => {
-    if (err) return getAccessToken(oAuth2Client, callback, code, res);
-    console.log(JSON.parse(token))
-    oAuth2Client.setCredentials(JSON.parse(token));
-    findChecky(oAuth2Client, JSON.parse(token));
-    //res.redirect(oAuth2Client.generateAuthUrl({ access_type: 'offline', scope: SCOPES, }));
-  });
-}
+  const jwtToken = await TokenJWT.findOne({
+    user: req.user.id
+  })
+    if (jwtToken) {
+      oAuth2Client.setCredentials(jwtToken);
+      findChecky(oAuth2Client, jwtToken, res);
+    } else {
+      getAccessToken(oAuth2Client, callback, code, res, req);
+    }
+  }
 
 
-function getAccessToken(oAuth2Client, callback, code, res) {
+function getAccessToken(oAuth2Client, callback, code, res, req) {
   const authUrl = oAuth2Client.generateAuthUrl({
     access_type: 'offline',
     scope: SCOPES,
@@ -69,7 +72,7 @@ function getAccessToken(oAuth2Client, callback, code, res) {
     oAuth2Client.getToken(code, (err, token) => {
       if (err) return console.error('Error retrieving access token', err);
       oAuth2Client.setCredentials(token);
-      token.user = res.user.id;
+      token.user = req.user.id;
       //Creating Google Drive Folder
 
       createFolder(oAuth2Client, token)
@@ -122,7 +125,7 @@ function listFiles(auth) {
   });
 }
 
-function findChecky(auth, token) {
+function findChecky(auth, token, res1) {
   const drive = google.drive({
     version: 'v3',
     auth
@@ -143,7 +146,10 @@ function findChecky(auth, token) {
       } else {
         res.data.files.forEach(function (file) {
           if (file.id == token.folder_id && file.name == "Checky") {
-            console.log("Found file Checky")
+            console.log('Found file checky')
+            res1.json({
+              "message": "Ste že povezani."
+            })
           }
         });
         pageToken = res.nextPageToken;
@@ -176,7 +182,7 @@ function createFolder(auth, token) {
   drive.files.create({
     resource: fileMetadata,
     fields: 'id'
-  }, function (err, file) {
+  }, async function (err, file) {
     if (err) {
       // Handle error
       console.error(err);
@@ -186,10 +192,14 @@ function createFolder(auth, token) {
       //let parentToken;
       //parentToken.push(JSON.stringify(token))
       //fs.writeFile(TOKEN_PATH, parentToken, (err) => {
-      fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
-        if (err) return console.error(err);
-        console.log('Token stored to', TOKEN_PATH);
-      });
+      const newToken = new TokenJWT(token)
+
+      await newToken.save()
+
+      // fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
+      //   if (err) return console.error(err);
+      //   console.log('Token stored to', TOKEN_PATH);
+      // });
     }
   });
 

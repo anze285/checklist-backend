@@ -4,6 +4,7 @@ const router = express.Router();
 const passport = require("passport")
 
 const Item = require('../models/Item')
+const TokenJWT = require('../models/TokenJWT')
 
 const async = require('async');
 
@@ -35,11 +36,11 @@ router.get("/", passport.authenticate("jwt", {
     fs.readFile('credentials.json', (err, content) => {
         if (err) return res.send('Error loading client secret file:', err);
         // Authorize a client with credentials, then call the Google Drive API.
-        authorize(JSON.parse(content), res);
+        authorize(JSON.parse(content), res, req);
     });
 })
 
-function authorize(credentials, res) {
+async function authorize(credentials, res, req) {
     const {
         client_secret,
         client_id,
@@ -48,16 +49,33 @@ function authorize(credentials, res) {
     const oAuth2Client = new google.auth.OAuth2(
         client_id, client_secret, redirect_uris[0]);
     // Check if we have previously stored a token.
-    fs.readFile(TOKEN_PATH, (err, token) => {
-        if (err) return res.send({
-            message: "Error retrieving token"
-        });
-        oAuth2Client.setCredentials(JSON.parse(token));
-        //synchronizeOld(oAuth2Client, JSON.parse(token));
-        synchronize(oAuth2Client, JSON.parse(token), res.user.id);
-        //res.redirect(oAuth2Client.generateAuthUrl({ access_type: 'offline', scope: SCOPES, }));
-        res.sendStatus(200)
-    });
+
+      const jwtToken = await TokenJWT.findOne({
+          user: req.user.id
+      })
+
+            try {
+                if (jwtToken) {
+                    oAuth2Client.setCredentials(jwtToken);
+                    synchronize(oAuth2Client, jwtToken, req.user.id);
+                    res.json({
+                        message: 'Uspešen prenos podatkov na Google Drive'
+                    })
+                }
+            } catch (error) {
+                res.json({
+                    error: error
+                })
+            }
+    
+        // if (err) return res.send({
+        //     message: "Error retrieving token"
+        // });
+        // oAuth2Client.setCredentials(JSON.parse(token));
+        // synchronizeOld(oAuth2Client, JSON.parse(token));
+        // synchronize(oAuth2Client, JSON.parse(token), req.user.id);
+        // res.redirect(oAuth2Client.generateAuthUrl({ access_type: 'offline', scope: SCOPES, }));
+        // res.sendStatus(200)
 }
 
 async function synchronize(auth, token, user_id) {
@@ -77,6 +95,8 @@ async function synchronize(auth, token, user_id) {
     projects.forEach(async function (project) {
         var projectPageToken = null;
         // Using the NPM module 'async'
+        console.log(project)
+        console.log(token.folder_id)
         async.doWhilst(function (projectCallback) {
             drive.files.list({
                 q: "mimeType = 'application/vnd.google-apps.folder' and name='" + project.title + "'",
@@ -90,6 +110,7 @@ async function synchronize(auth, token, user_id) {
                     projectCallback(err)
                 } else {
                     let projectFolderId;
+                    console.log(resProject.data)
                     if (resProject.data.files[1]) {
                         console.log("ERROR: There are 2 folders with the same name")
                     }
