@@ -80,7 +80,7 @@ function getAccessToken(oAuth2Client, callback, code, res) {
   } else {
     //res.redirect(authUrl);
     if (authUrl) {
-      res.status(200).json({
+      res.json({
         url: authUrl
       })
     } else {
