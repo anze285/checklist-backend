@@ -70,6 +70,7 @@ function getAccessToken(oAuth2Client, callback, code, res, req) {
   if (code != undefined && code != null) {
     oAuth2Client.getToken(code, (err, token) => {
       if (err) return console.error('Error retrieving access token', err);
+      console.log(token)
       oAuth2Client.setCredentials(token);
       token.user = req.user.id;
       //Creating Google Drive Folder
