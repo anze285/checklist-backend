@@ -56,7 +56,6 @@ function authorize(credentials, callback, code, res) {
     oAuth2Client.setCredentials(JSON.parse(token));
     findChecky(oAuth2Client, JSON.parse(token));
     //res.redirect(oAuth2Client.generateAuthUrl({ access_type: 'offline', scope: SCOPES, }));
-    res.sendStatus(200)
   });
 }
 
@@ -80,6 +79,7 @@ function getAccessToken(oAuth2Client, callback, code, res) {
   } else {
     //res.redirect(authUrl);
     if (authUrl) {
+      console.log(authUrl)
       res.json({
         url: authUrl
       })
