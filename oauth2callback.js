@@ -66,6 +66,7 @@ function getAccessToken(oAuth2Client, callback, code, res, req) {
   const authUrl = oAuth2Client.generateAuthUrl({
     access_type: 'offline',
     scope: SCOPES,
+    prompt: 'consent'
   });
   if (code != undefined && code != null) {
     oAuth2Client.getToken(code, (err, token) => {
