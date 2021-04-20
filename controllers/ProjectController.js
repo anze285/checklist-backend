@@ -131,14 +131,19 @@ module.exports = {
     },
     async delete(req, res) {
         try {
-            const item = await Item.findById(req.params.id)
+            const project = await Item.findById(req.params.id).populate({path: 'children', populate: { path: 'children' }})
 
-            if (item !== null) {
-                if (item.owner == req.user.id) {
-                    // item.child.remove()
-                    const deletedItem = await Item.findByIdAndDelete(req.params.id)
-                    // const deletedLists = await Item.findOneAndDelete({parentItem: req.params.id})
-
+            if (project !== null) {
+                if (project.owner == req.user.id) {
+                    
+                    project.children.forEach(async function (item) {
+                        item.children.forEach(async function(object){
+                            const deletedObject = await Item.findByIdAndDelete(object._id)
+                        })
+                        const deleteItem = await Item.findByIdAndDelete(item._id)
+                    })
+                    const deletedProject = await Item.findByIdAndDelete(req.params.id)
+                    
                     res.status(200).json({
                         message: "Successfuly deleted an item"
                     })

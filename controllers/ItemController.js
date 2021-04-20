@@ -146,7 +146,13 @@ module.exports = {
 
             if (item !== null) {
                 if (item.owner == req.user.id) {
-                    const deletedItem = await Item.findByIdAndDelete(req.params.id)
+                    
+                    const item = await Item.findById(req.params.id).populate({path: 'children'})
+
+                    item.children.forEach(async function(object){
+                        const deletedObject = await Item.findByIdAndDelete(object._id)
+                    })
+                    const deleteItem = await Item.findByIdAndDelete(item._id)
                     res.status(200).json({
                         message: "Successfuly deleted an item"
                     })
