@@ -192,8 +192,10 @@ function createFolder(auth, token) {
       //parentToken.push(JSON.stringify(token))
       //fs.writeFile(TOKEN_PATH, parentToken, (err) => {
       const newToken = new TokenJWT(token)
+      console.log("kle sem")
 
       await newToken.save()
+      console.log("kle pa nisem")
 
       // fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
       //   if (err) return console.error(err);
