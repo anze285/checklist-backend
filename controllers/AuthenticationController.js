@@ -136,7 +136,10 @@ module.exports = {
         try {
             let user = await User.findOne({
                 email
-            }).populate({path: 'roles', model: 'Role'})
+            }).populate({
+                path: 'roles',
+                model: 'Role'
+            })
             console.log(user)
             if (!user)
                 return res.status(400).json({
@@ -274,10 +277,27 @@ module.exports = {
     },
     async deleteUser(req, res) {
         try {
-            const user = await User.findByIdAndDelete(req.params.id)
-            res.json({
-                message: "Uspešno ste izbrisali uporabnika"
-            });
+            const user = await Item.findById(req.user.id).populate({
+                path: 'roles'
+            })
+            let admin = false
+            user.roles.forEach(function (role) {
+                if (role.name == 'admin') {
+                    admin = true
+                }
+            })
+            if (admin) {
+                const deleteUser = await User.findByIdAndDelete(req.params.id)
+                res.json({
+                    message: "Uspešno ste izbrisali uporabnika."
+                });
+            }
+            else{
+                res.json({
+                    message: "Za izbris potrebujete pravice admina."
+                });
+            }
+
         } catch (e) {
             res.send({
                 message: "Error fetching user"
