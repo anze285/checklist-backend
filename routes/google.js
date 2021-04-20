@@ -10,12 +10,12 @@ router.get("/oauth2callback", passport.authenticate("jwt", {
     session: false
 }), async (req, res) => {
 
-    axios.get('oauth2callback', {
+    /*axios.get('oauth2callback', {
         headers: {
             Authorization: 'Bearer ' + req.user
         }
-    })
-    res.sendStatus(200)
+    })*/
+    res.sendStatus(500)
 })
 
 

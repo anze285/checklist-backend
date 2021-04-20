@@ -78,7 +78,16 @@ function getAccessToken(oAuth2Client, callback, code, res) {
       res.sendStatus(200);
     });
   } else {
-    res.redirect(authUrl);
+    //res.redirect(authUrl);
+    if (authUrl) {
+      res.status(200).json({
+        url: authUrl
+      })
+    } else {
+      res.send({
+        msg: "Error creating url"
+      })
+    }
   }
 }
 /**
