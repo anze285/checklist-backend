@@ -33,6 +33,7 @@ const item = require('./routes/item')
 const status = require('./routes/status')
 const role = require('./routes/role')
 const drive = require('./routes/google')
+const stats = require('./routes/stats')
 
 app.use("/api/user", user)
 app.use("/api/project", project)
@@ -40,6 +41,7 @@ app.use("/api/item", item)
 app.use("/api/status", status)
 app.use("/api/role", role)
 app.use('/api/drive', drive)
+app.use("/api/stats", stats)
 
 //Google Drive API
 
