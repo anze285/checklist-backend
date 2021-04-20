@@ -151,14 +151,13 @@ module.exports = {
     async delete(req, res) {
         try {
             const project = await Item.findById(req.params.id).populate({path: 'children', populate: { path: 'children' }})
-            const user = await Item.findById(req.user.id).populate({path: 'roles'})
+            const user = req.user
             let admin = false
             user.roles.forEach(function (role){
                 if(role.name == 'admin' ){
                     admin = true
                 }
             })
-
             if (project !== null) {
                 if (project.owner == req.user.id || admin) {
                     

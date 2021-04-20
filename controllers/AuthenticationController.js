@@ -277,9 +277,7 @@ module.exports = {
     },
     async deleteUser(req, res) {
         try {
-            const user = await Item.findById(req.user.id).populate({
-                path: 'roles'
-            })
+            const user = req.user
             let admin = false
             user.roles.forEach(function (role) {
                 if (role.name == 'admin') {
