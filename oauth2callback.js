@@ -24,14 +24,14 @@ const TOKEN_PATH = 'token.json';
 
 router.use(cors())
 
-router.get("/", passport.authenticate("jwt", {
+router.post("/", passport.authenticate("jwt", {
   session: false
 }), function (req, res) {
   // Load client secrets from a local file.
   fs.readFile('credentials.json', (err, content) => {
     if (err) return res.send('Error loading client secret file:', err);
     // Authorize a client with credentials, then call the Google Drive API.
-    authorize(JSON.parse(content), listFiles, req.query.code, res);
+    authorize(JSON.parse(content), listFiles, req.body.code, res);
   });
 })
 
@@ -183,9 +183,10 @@ function createFolder(auth, token) {
     } else {
       console.log('Folder Id: ', file.data.id);
       token.folder_id = file.data.id;
-      let parentToken;
-      parentToken.push(JSON.stringify(token))
-      fs.writeFile(TOKEN_PATH, parentToken, (err) => {
+      //let parentToken;
+      //parentToken.push(JSON.stringify(token))
+      //fs.writeFile(TOKEN_PATH, parentToken, (err) => {
+      fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
         if (err) return console.error(err);
         console.log('Token stored to', TOKEN_PATH);
       });
