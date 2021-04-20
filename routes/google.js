@@ -6,16 +6,28 @@ const router = express.Router()
 const passport = require("passport")
 const axios = require("axios")
 
-router.get("/oauth2callback", passport.authenticate("jwt", {
+const TokenJWT = require('../models/TokenJWT')
+
+
+
+router.get("/connected", passport.authenticate("jwt", {
     session: false
 }), async (req, res) => {
 
-    /*axios.get('oauth2callback', {
-        headers: {
-            Authorization: 'Bearer ' + req.user
-        }
-    })*/
-    res.sendStatus(500)
+    const jwtToken = await TokenJWT.findOne({
+        user: req.user.id
+    })
+    if(jwtToken){
+        res.json({
+            connected: true
+        })
+    }
+    else{
+        res.json({
+            connected: false
+        })
+    }
+
 })
 
 

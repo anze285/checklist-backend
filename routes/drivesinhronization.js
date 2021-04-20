@@ -18,11 +18,6 @@ const {
     ContextHandlerImpl
 } = require("express-validator/src/chain");
 
-let Projects = [];
-let Items = [];
-let Objects = [];
-let ids = [];
-
 // If modifying these scopes, delete token.json.
 // The file token.json stores the user's access and refresh tokens, and is
 // created automatically when the authorization flow completes for the first
