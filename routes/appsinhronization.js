@@ -449,7 +449,7 @@ function readObjects(item, drive, itemId, userId) {
                                             })
                                     } else {
                                         const newObject = new Item({
-                                            title: itemFolder.name,
+                                            title: objectFolder.name,
                                             project: false,
                                             dateAdd: new Date().getTime(),
                                             dateModify: new Date().getTime(),
