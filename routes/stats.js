@@ -5,10 +5,13 @@ const {
 const router = express.Router();
 const passport = require("passport")
 
-const ProjectController = require('../controllers/ProjectController')
+const StatsController = require('../controllers/StatsController')
 
 router.get("/projects", passport.authenticate("jwt", {
-    session: false
-}), ProjectController.projectsLastYear)
+        session: false
+    }), StatsController.projectsLastYear),
+    router.get("/projects/invited", passport.authenticate("jwt", {
+        session: false
+    }), StatsController.joinedProjectsLastYear)
 
 module.exports = router;
