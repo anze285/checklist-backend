@@ -108,51 +108,85 @@ function readProjects(auth, token, userId) {
                                 fields: 'nextPageToken, files(id, name)',
                                 spaces: 'drive',
                                 pageToken: filePageToken
-                            }, function (err, resFile) {
+                            }, async function (err, resFile) {
                                 if (err) {
                                     // Handle error
                                     console.error(err);
                                     fileCallback(err)
                                 } else {
-                                    console.log(resFile.data.files[0].id)
-
-                                    let request = drive.files.get({
-                                        fileId: resFile.data.files[0].id,
-                                        alt: 'media'
-                                    })
-                                    request.then(async function (response) {
-                                            //console.log(response.data); //response.data contains the string value of the file
-                                            /*if (typeof callback === "function"){
-                                                console.log(response.data);
-                                            }*/
-                                            const newProject = new Item({
-                                                title: response.data.title,
-                                                description: response.data.description,
-                                                tags: response.data.tags,
-                                                children: response.data.children,
-                                                users: response.data.users,
-                                                deadline: response.data.deadline,
-                                                project: response.data.project,
-                                                dateAdd: response.data.dateAdd,
-                                                dateModify: response.data.dateModify,
-                                                owner: userId,
-                                                status: response.data.status
-                                            });
-                                            await newProject.save()
-
-                                            const token = new Token({
-                                                token: crypto.randomBytes(16).toString('hex'),
-                                                user: response.data.owner,
-                                                project: newProject._id
-                                            })
-
-                                            await token.save()
-
-                                            readItems(newProject, drive, projectFolder.id, userId)
-                                        },
-                                        function (error) {
-                                            console.error(error)
+                                    //console.log(resFile.data.files[0].id)
+                                    if (resFile.data.files[0]) {
+                                        let request = drive.files.get({
+                                            fileId: resFile.data.files[0].id,
+                                            alt: 'media'
                                         })
+                                        request.then(async function (response) {
+                                                //console.log(response.data); //response.data contains the string value of the file
+                                                /*if (typeof callback === "function"){
+                                                    console.log(response.data);
+                                                }*/
+                                                const {
+                                                    title,
+                                                    description,
+                                                    tags,
+                                                    children,
+                                                    users,
+                                                    deadline,
+                                                    dateAdd,
+                                                    dateModify,
+                                                    status
+                                                } = response.data;
+
+                                                const newProject = new Item({
+                                                    title,
+                                                    description,
+                                                    tags,
+                                                    children,
+                                                    users,
+                                                    deadline,
+                                                    project: true,
+                                                    dateAdd,
+                                                    dateModify,
+                                                    owner: userId,
+                                                    status,
+                                                });
+                                                await newProject.save()
+
+                                                const token = new Token({
+                                                    token: crypto.randomBytes(16).toString('hex'),
+                                                    user: userId,
+                                                    project: newProject._id
+                                                })
+
+                                                await token.save()
+
+                                                readItems(newProject, drive, projectFolder.id, userId)
+                                            },
+                                            function (error) {
+                                                console.error(error)
+                                            })
+                                    } else {
+                                        const newProject = new Item({
+                                            title: projectFolder.name,
+                                            project: true,
+                                            dateAdd: new Date().getTime(),
+                                            dateModify: new Date().getTime(),
+                                            owner: userId
+                                        })
+
+                                        await newProject.save()
+
+                                        const token = new Token({
+                                            token: crypto.randomBytes(16).toString('hex'),
+                                            user: userId,
+                                            project: newProject._id
+                                        })
+
+                                        await token.save()
+
+                                        readItems(newProject, drive, projectFolder.id, userId)
+                                    }
+
 
 
                                     filePageToken = resFile.nextPageToken;
@@ -230,43 +264,68 @@ function readItems(project, drive, projectId, userId) {
                                     console.error(err);
                                     fileCallback(err)
                                 } else {
-                                    console.log(resFile.data.files[0].id)
 
-                                    let request = drive.files.get({
-                                        fileId: resFile.data.files[0].id,
-                                        alt: 'media'
-                                    })
-                                    await request.then(async function (response) {
-                                            //console.log(response.data); //response.data contains the string value of the file
-                                            /*if (typeof callback === "function"){
-                                                console.log(response.data);
-                                            }*/
-                                            const newItem = new Item({
-                                                title: response.data.title,
-                                                description: response.data.description,
-                                                tags: response.data.tags,
-                                                children: response.data.children,
-                                                users: response.data.users,
-                                                deadline: response.data.deadline,
-                                                project: response.data.project,
-                                                dateAdd: response.data.dateAdd,
-                                                dateModify: response.data.dateModify,
-                                                owner: userId,
-                                                status: response.data.status
-                                            });
-                                            await newItem.save()
-                                            console.log(project._id)
-                                            parentProject = await Item.findById(project._id)
-                                            console.log(parentProject)
-
-                                            parentProject.children.push(newItem._id) //OLD IDS ARE NOT DELETED
-                                            await parentProject.save()
-
-                                            readObjects(newItem, drive, itemFolder.id, userId)
-                                        },
-                                        function (error) {
-                                            console.error(error)
+                                    if (resFile.data.files[0]) {
+                                        let request = drive.files.get({
+                                            fileId: resFile.data.files[0].id,
+                                            alt: 'media'
                                         })
+                                        await request.then(async function (response) {
+                                                const {
+                                                    title,
+                                                    description,
+                                                    tags,
+                                                    children,
+                                                    users,
+                                                    deadline,
+                                                    dateAdd,
+                                                    dateModify,
+                                                    status
+                                                } = response.data;
+
+                                                const newItem = new Item({
+                                                    title,
+                                                    description,
+                                                    tags,
+                                                    children,
+                                                    users,
+                                                    deadline,
+                                                    project: false,
+                                                    dateAdd,
+                                                    dateModify,
+                                                    owner: userId,
+                                                    status,
+                                                })
+                                                await newItem.save()
+
+                                                parentProject = await Item.findById(project._id)
+
+                                                parentProject.children.push(newItem._id) //OLD IDS ARE NOT DELETED
+                                                await parentProject.save()
+
+                                                readObjects(newItem, drive, itemFolder.id, userId)
+                                            },
+                                            function (error) {
+                                                console.error(error)
+                                            })
+                                    } else {
+                                        const newItem = new Item({
+                                            title: itemFolder.name,
+                                            project: false,
+                                            dateAdd: new Date().getTime(),
+                                            dateModify: new Date().getTime(),
+                                            owner: userId
+                                        })
+
+                                        await newItem.save()
+
+                                        parentProject = await Item.findById(project._id)
+
+                                        parentProject.children.push(newItem._id) //OLD IDS ARE NOT DELETED
+                                        await parentProject.save()
+
+                                        readObjects(newItem, drive, itemFolder.id, userId)
+                                    }
 
                                     filePageToken = resFile.nextPageToken;
                                     fileCallback();
@@ -346,40 +405,64 @@ function readObjects(item, drive, itemId, userId) {
                                     console.error(err);
                                     fileCallback(err)
                                 } else {
-                                    console.log(resFile.data.files[0].id)
 
-                                    let request = drive.files.get({
-                                        fileId: resFile.data.files[0].id,
-                                        alt: 'media'
-                                    })
-                                    await request.then(async function (response) {
-                                            //console.log(response.data); //response.data contains the string value of the file
-                                            /*if (typeof callback === "function"){
-                                                console.log(response.data);
-                                            }*/
-                                            const newObject = new Item({
-                                                title: response.data.title,
-                                                description: response.data.description,
-                                                tags: response.data.tags,
-                                                children: response.data.children,
-                                                users: response.data.users,
-                                                deadline: response.data.deadline,
-                                                project: response.data.project,
-                                                dateAdd: response.data.dateAdd,
-                                                dateModify: response.data.dateModify,
-                                                owner: userId,
-                                                status: response.data.status
-                                            });
-                                            await newObject.save()
-                                            parentItem = await Item.findById(item._id)
-                                            console.log(parentItem)
-
-                                            parentItem.children.push(newObject._id) //OLD IDS ARE NOT DELETED
-                                            await parentItem.save()
-                                        },
-                                        function (error) {
-                                            console.error(error)
+                                    if (resFile.data.files[0]) {
+                                        let request = drive.files.get({
+                                            fileId: resFile.data.files[0].id,
+                                            alt: 'media'
                                         })
+                                        await request.then(async function (response) {
+                                                const {
+                                                    title,
+                                                    description,
+                                                    tags,
+                                                    children,
+                                                    users,
+                                                    deadline,
+                                                    dateAdd,
+                                                    dateModify,
+                                                    status
+                                                } = response.data;
+
+                                                const newObject = new Item({
+                                                    title,
+                                                    description,
+                                                    tags,
+                                                    children,
+                                                    users,
+                                                    deadline,
+                                                    project: false,
+                                                    dateAdd,
+                                                    dateModify,
+                                                    owner: userId,
+                                                    status,
+                                                })
+                                                await newObject.save()
+                                                parentItem = await Item.findById(item._id)
+                                                console.log(parentItem)
+
+                                                parentItem.children.push(newObject._id) //OLD IDS ARE NOT DELETED
+                                                await parentItem.save()
+                                            },
+                                            function (error) {
+                                                console.error(error)
+                                            })
+                                    } else {
+                                        const newObject = new Item({
+                                            title: itemFolder.name,
+                                            project: false,
+                                            dateAdd: new Date().getTime(),
+                                            dateModify: new Date().getTime(),
+                                            owner: userId
+                                        })
+
+                                        await newObject.save()
+
+                                        parentItem = await Item.findById(item._id)
+
+                                        parentItem.children.push(newObject._id) //OLD IDS ARE NOT DELETED
+                                        await parentItem.save()
+                                    }
 
                                     filePageToken = resFile.nextPageToken;
                                     fileCallback();
