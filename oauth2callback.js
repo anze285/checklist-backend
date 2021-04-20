@@ -48,7 +48,7 @@ function authorize(credentials, callback, code, res) {
     redirect_uris
   } = credentials.web;
   const oAuth2Client = new google.auth.OAuth2(
-    client_id, client_secret, redirect_uris[1]);
+    client_id, client_secret, redirect_uris[0]);
   // Check if we have previously stored a token.
   fs.readFile(TOKEN_PATH, (err, token) => {
     if (err) return getAccessToken(oAuth2Client, callback, code, res);
@@ -74,12 +74,11 @@ function getAccessToken(oAuth2Client, callback, code, res) {
 
       createFolder(oAuth2Client, token)
 
-      res.sendStatus(200);
+      // res.sendStatus(200);
     });
   } else {
     //res.redirect(authUrl);
     if (authUrl) {
-      console.log(authUrl)
       res.json({
         url: authUrl
       })
