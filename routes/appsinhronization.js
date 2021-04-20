@@ -346,7 +346,7 @@ function readItems(project, drive, projectId, userId) {
                         console.log("There are 2 folders with the same name")
                     }
                 });
-                await project.save()
+                // await project.save()
 
 
                 pageToken = res.nextPageToken;
@@ -483,7 +483,7 @@ function readObjects(item, drive, itemId, userId) {
                         console.log("There are 2 folders with the same name")
                     }
                 });
-                await project.save()
+                // await project.save()
 
 
                 pageToken = res.nextPageToken;
