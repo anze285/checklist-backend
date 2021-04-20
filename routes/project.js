@@ -27,6 +27,10 @@ router.get("/invite/:inviteLink", passport.authenticate("jwt", {
     session: false
 }), ProjectController.inviteLink)
 
+router.get("/admin/all", passport.authenticate("jwt", {
+    session: false
+}), ProjectController.adminAll)
+
 router.post("/invite", [
     check("emails", "Please enter a valid email").isEmail(),
 ], passport.authenticate("jwt", {

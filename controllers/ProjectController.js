@@ -32,6 +32,25 @@ module.exports = {
             })
         }
     },
+    async adminAll(req, res) {
+        try {
+        try {
+            const projects = await Item.find({project: true}).populate('owner')
+            res.json({
+                projects: projects
+            });
+        } catch (e) {
+            res.send({
+                message: "Error fetching user"
+            });
+        }
+        } catch (e) {
+            res.send({
+                msg: "Error fetching items",
+                msg: req.user.id
+            })
+        }
+    },
     async single(req, res) {
         try {
             const itemId = req.params.id
@@ -131,19 +150,24 @@ module.exports = {
     },
     async delete(req, res) {
         try {
-            const project = await Item.findById(req.params.id).populate({path: 'children', populate: { path: 'children' }})
+            const project = await Item.findById(req.params.id).populate({
+                path: 'children',
+                populate: {
+                    path: 'children'
+                }
+            })
 
             if (project !== null) {
                 if (project.owner == req.user.id) {
-                    
+
                     project.children.forEach(async function (item) {
-                        item.children.forEach(async function(object){
+                        item.children.forEach(async function (object) {
                             const deletedObject = await Item.findByIdAndDelete(object._id)
                         })
                         const deleteItem = await Item.findByIdAndDelete(item._id)
                     })
                     const deletedProject = await Item.findByIdAndDelete(req.params.id)
-                    
+
                     res.status(200).json({
                         message: "Successfuly deleted an item"
                     })
