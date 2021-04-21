@@ -118,15 +118,20 @@ module.exports = {
     async updateListItems(req, res) {
         try {
             const {
-                newListId
+                newList
             } = req.body
 
-            const updatedItem = await Item.findByIdAndUpdate(req.params.id, {
-                parentItem: newListId
+            const oldList = await Item.updateOne({
+                children: req.params.id
             }, {
-                new: true,
-                useFindAndModify: false
+                $pullAll: {
+                    children: [req.params.id]
+                }
             })
+
+            const updatedList = await Item.findById(newList._id)
+            updatedList.children = newList.children
+            updatedList.save()
 
             res.status(200).json({
                 message: "Successfuly updated an item",
