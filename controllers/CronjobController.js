@@ -11,7 +11,7 @@ const nodemailer = require('nodemailer')
 
 module.exports = {
     weeklyReport() {
-        cron.schedule('0 10 7 * * 3', () => {
+        cron.schedule('0 15 7 * * 3', () => {
             weeklyReports()
         })
     },
@@ -29,7 +29,7 @@ async function deleteUnactivatedUsers() {
         newDate = new Date()
         oldDate = newDate.getDate() - 14
         newDate.setDate(oldDate)
-        if (user.dateAdd < newDate){
+        if (user.dateAdd < newDate) {
             const deletedUser = await Item.findByIdAndDelete(user._id)
             console.log(user.email + " was deleted.")
         }
@@ -41,11 +41,11 @@ async function weeklyReports() {
     oldDate = newDate.getDate() - 7
     newDate.setDate(oldDate)
     const users = await User.find()
+    projectsLength = 0;
+    itemsLength = 0;
+    objectsLength = 0;
     users.forEach(async function (user) {
         if (user.active) {
-            projectsLength = 0;
-            itemsLength = 0;
-            objectsLength = 0;
             const projects = await Item.find({
                 owner: user._id,
                 project: true
@@ -55,6 +55,9 @@ async function weeklyReports() {
                     path: 'children'
                 }
             })
+            projectsLength = 0;
+            itemsLength = 0;
+            objectsLength = 0;
             projects.forEach(async function (project) {
                 if (project.dateModify > newDate) {
                     projectsLength++
