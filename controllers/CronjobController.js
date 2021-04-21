@@ -11,7 +11,7 @@ const nodemailer = require('nodemailer')
 
 module.exports = {
     weeklyReport() {
-        cron.schedule('0 15 7 * * 3', () => {
+        cron.schedule('0 0 7 * * 1', () => {
             weeklyReports()
         })
     },
