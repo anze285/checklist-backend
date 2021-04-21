@@ -11,7 +11,7 @@ const nodemailer = require('nodemailer')
 
 module.exports = {
     weeklyReport() {
-        cron.schedule('0 0 7 * * 3', () => {
+        cron.schedule('0 10 7 * * 3', () => {
             weeklyReports()
         })
     },
@@ -75,7 +75,7 @@ async function weeklyReports() {
             console.log(projectsLength + " " + itemsLength + " " + objectsLength)
             let message;
             if ((projectsLength + objectsLength + itemsLength) > 10) {
-                messasge = "Ta teden ste bili zelo delavni, saj ste ustvarili ali posodobili, kar " + (projectsLength + objectsLength + itemsLength) + " opravil!💯"
+                message = "Ta teden ste bili zelo delavni, saj ste ustvarili ali posodobili, kar " + (projectsLength + objectsLength + itemsLength) + " opravil!💯"
             } else if ((projectsLength + objectsLength + itemsLength) == 0) {
                 message = "Ta teden sploh niste bili dejavni, saj ste ustvarili ali posodobili " + (projectsLength + objectsLength + itemsLength) + " opravil! Vedi, da kdor ne dela naj ne je.💩💩💩"
             } else if ((projectsLength + objectsLength + itemsLength) == 1) {
