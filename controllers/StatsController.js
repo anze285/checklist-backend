@@ -41,10 +41,11 @@ module.exports = {
             const october = new Date(currentYear, 10, 1)
             const november = new Date(currentYear, 11, 1)
             const december = new Date(currentYear, 12, 1)
+            const lastDecember = new Date((currentYear - 1), 12, 1)
 
             projects.forEach(project => {
                 if (project.dateAdd > january && project.dateAdd < february) {
-                    januaryCount += 1
+                    februaryCount += 1
                 } else if (project.dateAdd > february && project.dateAdd < march) {
                     marchCount += 1
                 } else if (project.dateAdd > march && project.dateAdd < april) {
@@ -65,8 +66,8 @@ module.exports = {
                     novemberCount += 1
                 } else if (project.dateAdd > november && project.dateAdd < december) {
                     decemberCount += 1
-                } else if (project.dateAdd > december && project.dateAdd < january) {
-                    februaryCount += 1
+                } else if (project.dateAdd > lastDecember && project.dateAdd < january) {
+                    januaryCount += 1
                 }
             })
 
@@ -158,10 +159,12 @@ module.exports = {
             const october = new Date(currentYear, 10, 1)
             const november = new Date(currentYear, 11, 1)
             const december = new Date(currentYear, 12, 1)
+            const lastDecember = new Date((currentYear - 1), 12, 1)
+
 
             projects.forEach(project => {
                 if (project.dateAdd > january && project.dateAdd < february) {
-                    januaryCount += 1
+                    februaryCount += 1
                 } else if (project.dateAdd > february && project.dateAdd < march) {
                     marchCount += 1
                 } else if (project.dateAdd > march && project.dateAdd < april) {
@@ -182,8 +185,8 @@ module.exports = {
                     novemberCount += 1
                 } else if (project.dateAdd > november && project.dateAdd < december) {
                     decemberCount += 1
-                } else if (project.dateAdd > december && project.dateAdd < january) {
-                    februaryCount += 1
+                } else if (project.dateAdd > lastDecember && project.dateAdd < january) {
+                    januaryCount += 1
                 }
             })
 
@@ -233,7 +236,7 @@ module.exports = {
 
             res.json({
                 chartData: data,
-                lastProject: projects[projects.length-1]
+                lastProject: projects[projects.length - 1]
             })
 
         } catch (error) {
