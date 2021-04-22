@@ -8,6 +8,8 @@ const User = require('../models/User')
 const config = require('../config/config')
 const nodemailer = require('nodemailer')
 
+const express = require('express')
+const router = express.Router()
 
 module.exports = {
     weeklyReport() {
@@ -18,6 +20,13 @@ module.exports = {
     databaseCleaning() {
         cron.schedule('0 0 * * *', () => {
             deleteUnactivatedUsers()
+        })
+    },
+    dailyQuote() {
+        cron.schedule('0 0 * * *', () => {
+            router.get('/api/general/quotes', (req, res) => {
+                randomDailyQuote()
+            })
         })
     }
 }
@@ -34,6 +43,20 @@ async function deleteUnactivatedUsers() {
             console.log(user.email + " was deleted.")
         }
     })
+}
+
+async function randomDailyQuote(req, res) {
+    try {
+        const randomQuote = await axios
+            .get('https://api.quotable.io/random?tags=technology,famous-quotes')
+        res.json({
+            quote: randomQuote
+        })
+    } catch (e) {
+        res.send({
+            msg: "Error fetching a random quote"
+        })
+    }
 }
 
 async function weeklyReports() {
@@ -113,7 +136,6 @@ async function weeklyReports() {
                     <br> Število seznamov, ki ste jih posodobili ali ustvarili ta teden: ${itemsLength}
                     <br> Število opravil, ki ste jih posodobili ali ustvarili ta teden: ${objectsLength}</p>
                     </div>`,
-
             })
         } else {
             const transport = nodemailer.createTransport({
