@@ -12,7 +12,7 @@ const nodemailer = require('nodemailer')
 module.exports = {
     weeklyReport() {
         cron.schedule('0 0 7 * * 1', () => {
-            weeklyReports()
+            //weeklyReports()
         })
     },
     databaseCleaning() {
